@@ -7,7 +7,7 @@ import { ShieldCheck, Award, Sparkles, Database, CheckCircle2 } from 'lucide-rea
 export const Hero3D: React.FC = () => {
   return (
     <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 bg-gradient-to-b from-blue-50/50 via-slate-50 to-slate-50">
-      {/* Background Decorative 3D Orbs */}
+      {/* Background Decorative Orbs */}
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-tr from-blue-400/15 via-indigo-300/10 to-amber-200/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -59,36 +59,26 @@ export const Hero3D: React.FC = () => {
             {/* 3D Container Wrapper with Perspective */}
             <div className="relative w-full max-w-md aspect-[4/5] perspective-1000">
               
-              {/* Floating Orbit Ring 1 (3D Decorative) */}
+              {/* Floating Orbit Rings */}
               <div className="absolute inset-0 rounded-3xl border-2 border-blue-400/20 rotate-6 scale-105 animate-float-slow pointer-events-none" />
               <div className="absolute inset-0 rounded-3xl border-2 border-amber-300/30 -rotate-3 scale-95 animate-float-slow pointer-events-none" style={{ animationDelay: '1.5s' }} />
 
               {/* Main 3D Glassmorphism Diploma Card */}
               <div className="relative w-full h-full bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-white/60 shadow-2xl shadow-blue-900/10 flex flex-col justify-between transform hover:rotate-1 hover:scale-102 transition-all duration-500 group">
                 
-                {/* Header Card with Logo & Gold Seal */}
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400 shadow-md relative">
-                      <Image
-                        src="/jokowi.webp"
-                        alt="Institusi Seal"
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div>
-                      <h4 className="font-bold text-slate-900 text-sm">Universitas Gadjah Mada</h4>
-                      <p className="text-xs text-slate-500 font-mono">Fakultas Kehutanan</p>
-                    </div>
+                {/* Header Card with Logo */}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400 shadow-md relative">
+                    <Image
+                      src="/jokowi.webp"
+                      alt="Institusi Seal"
+                      fill
+                      className="object-cover"
+                    />
                   </div>
-
-                  {/* 3D Floating Gold Medal Seal Badge */}
-                  <div className="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-br from-amber-300 via-amber-500 to-yellow-600 text-white shadow-lg shadow-amber-500/30 animate-bounce" style={{ animationDuration: '4s' }}>
-                    <Award className="w-6 h-6" />
-                    <span className="absolute -bottom-1 px-1.5 py-0.5 bg-slate-900 text-[9px] font-bold text-amber-300 rounded-full border border-amber-400">
-                      3D SEAL
-                    </span>
+                  <div>
+                    <h4 className="font-bold text-slate-900 text-sm">Universitas Gadjah Mada</h4>
+                    <p className="text-xs text-slate-500 font-mono">Fakultas Kehutanan</p>
                   </div>
                 </div>
 

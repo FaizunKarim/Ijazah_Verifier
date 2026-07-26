@@ -1,16 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Wallet, Shield, CheckCircle2, Copy, AlertCircle } from 'lucide-react';
+import { X, Wallet, CheckCircle2, Copy } from 'lucide-react';
 
 interface ConnectWalletModalProps {
   isOpen: boolean;
   onClose: () => void;
   userAddress: string;
-  contractAddress: string;
-  onConnectMetaMask: () => Promise<void>;
   onSaveManualAddress: (address: string) => void;
-  onSaveContractAddress: (contractAddr: string) => void;
   isOwner: boolean;
 }
 
@@ -18,37 +15,18 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
   isOpen,
   onClose,
   userAddress,
-  contractAddress,
-  onConnectMetaMask,
   onSaveManualAddress,
-  onSaveContractAddress,
   isOwner,
 }) => {
   const [manualAddrInput, setManualAddrInput] = useState<string>(userAddress || '');
-  const [contractAddrInput, setContractAddrInput] = useState<string>(contractAddress || '');
   const [copied, setCopied] = useState<boolean>(false);
-  const [isConnecting, setIsConnecting] = useState<boolean>(false);
 
   if (!isOpen) return null;
-
-  const handleMetaMask = async () => {
-    setIsConnecting(true);
-    try {
-      await onConnectMetaMask();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsConnecting(false);
-    }
-  };
 
   const handleSaveManual = (e: React.FormEvent) => {
     e.preventDefault();
     if (manualAddrInput.trim()) {
       onSaveManualAddress(manualAddrInput.trim());
-    }
-    if (contractAddrInput.trim()) {
-      onSaveContractAddress(contractAddrInput.trim());
     }
     onClose();
   };
@@ -77,75 +55,32 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
             <Wallet className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Koneksi Wallet</h3>
-            <p className="text-xs text-slate-500 font-medium">MetaMask & Wallet Address Field</p>
+            <h3 className="text-xl font-bold text-slate-900">Input Wallet Address</h3>
+            <p className="text-xs text-slate-500 font-medium">Masukkan alamat wallet untuk terhubung</p>
           </div>
         </div>
 
-        {/* Option 1: Automatic MetaMask Connection */}
-        <div className="space-y-3">
-          <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-            METODE 1: KONEKSI METAMASK OTOMATIS
-          </label>
-          <button
-            onClick={handleMetaMask}
-            disabled={isConnecting}
-            className="w-full py-3.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-md shadow-blue-500/20 flex items-center justify-between group"
-          >
-            <div className="flex items-center gap-3">
-              <span className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
-                🦊
-              </span>
-              <span>{isConnecting ? 'Menghubungkan...' : 'Connect dengan MetaMask'}</span>
-            </div>
-            <span className="text-xs bg-white/20 px-2.5 py-1 rounded-lg group-hover:bg-white/30">
-              Auto Detect
-            </span>
-          </button>
-        </div>
-
-        <div className="relative flex py-1 items-center">
-          <div className="flex-grow border-t border-slate-200"></div>
-          <span className="flex-shrink mx-4 text-xs font-bold text-slate-400 uppercase">atau</span>
-          <div className="flex-grow border-t border-slate-200"></div>
-        </div>
-
-        {/* Option 2: Manual Wallet Address Form Field */}
+        {/* Literal Manual Wallet Address Form Field */}
         <form onSubmit={handleSaveManual} className="space-y-4">
           <div>
             <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
-              METODE 2: INPUT FORM WALLET ADDRESS
+              WALLET ADDRESS (0x...)
             </label>
-            <p className="text-xs text-slate-500 mb-2">
-              Masukkan alamat wallet Anda (`0x...`) untuk verifikasi identitas atau testing role Admin.
-            </p>
             <input
               type="text"
               value={manualAddrInput}
               onChange={(e) => setManualAddrInput(e.target.value)}
               placeholder="Masukkan Wallet Address (0x...)"
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5">
-              ALAMAT SMART CONTRACT DEPLOYED (BOT CHAIN)
-            </label>
-            <input
-              type="text"
-              value={contractAddrInput}
-              onChange={(e) => setContractAddrInput(e.target.value)}
-              placeholder="Masukkan Deployed Contract Address (0x...)"
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-xs focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-sm transition-all shadow-sm"
+            disabled={!manualAddrInput.trim()}
+            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-2xl text-sm transition-all shadow-md shadow-blue-500/20"
           >
-            Simpan Alamat & Terhubung
+            Simpan & Hubungkan Wallet
           </button>
         </form>
 

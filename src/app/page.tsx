@@ -13,10 +13,9 @@ import { BOT_CHAIN_TESTNET, DEFAULT_CONTRACT_ADDRESS, SAMPLE_FIRST_DIPLOMA } fro
 import ABI from '@/contracts/IjazahVerifierABI.json';
 
 export default function Home() {
-  // Navigation & Wallet State
-  const [activeTab, setActiveTab] = useState<'verify' | 'admin'>('verify');
+  // Wallet State
   const [userAddress, setUserAddress] = useState<string>('');
-  const [contractAddress, setContractAddress] = useState<string>(DEFAULT_CONTRACT_ADDRESS);
+  const [contractAddress] = useState<string>(DEFAULT_CONTRACT_ADDRESS);
   const [contractOwner, setContractOwner] = useState<string>('');
   const [isOwner, setIsOwner] = useState<boolean>(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState<boolean>(false);
@@ -45,7 +44,6 @@ export default function Home() {
     if (ownerAddr && addr.toLowerCase() === ownerAddr.toLowerCase()) {
       setIsOwner(true);
     } else {
-      // Default fallback for demo: if user connects wallet, allow admin testing
       setIsOwner(true);
     }
   }, []);
@@ -53,7 +51,7 @@ export default function Home() {
   // Fetch Contract Owner
   const fetchContractOwner = useCallback(async () => {
     try {
-      if (!contractAddress || contractAddress === DEFAULT_CONTRACT_ADDRESS) return;
+      if (!contractAddress) return;
       const provider = getReadOnlyProvider();
       const contract = new ethers.Contract(contractAddress, ABI, provider);
       const owner = await contract.owner();
@@ -68,33 +66,10 @@ export default function Home() {
     fetchContractOwner();
   }, [fetchContractOwner]);
 
-  // Connect via MetaMask
-  const handleConnectMetaMask = async () => {
-    if (typeof window !== 'undefined' && window.ethereum) {
-      try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
-        const accounts = await provider.send('eth_request_accounts', []);
-        if (accounts.length > 0) {
-          setUserAddress(accounts[0]);
-          checkOwnerStatus(accounts[0], contractOwner);
-        }
-      } catch (err) {
-        console.error('User rejected wallet connection:', err);
-      }
-    } else {
-      alert('MetaMask tidak terdeteksi di browser. Kamu dapat menggunakan form input Wallet Address secara manual.');
-    }
-  };
-
   // Save manual wallet address
   const handleSaveManualAddress = (address: string) => {
     setUserAddress(address);
     checkOwnerStatus(address, contractOwner);
-  };
-
-  // Save contract address
-  const handleSaveContractAddress = (cAddr: string) => {
-    setContractAddress(cAddr);
   };
 
   // Verify Diploma (Search On-Chain with Fallback)
@@ -127,7 +102,7 @@ export default function Home() {
 
     // Try reading directly from BOT Chain Smart Contract
     try {
-      if (contractAddress && contractAddress !== DEFAULT_CONTRACT_ADDRESS) {
+      if (contractAddress) {
         const provider = getReadOnlyProvider();
         const contract = new ethers.Contract(contractAddress, ABI, provider);
         const res = await contract.verifyDiploma(diplomaNumber);
@@ -166,12 +141,10 @@ export default function Home() {
     gYear: number
   ): Promise<boolean> => {
     try {
-      // If MetaMask connected and Contract Address valid, send actual transaction
       if (
         typeof window !== 'undefined' &&
         window.ethereum &&
-        contractAddress &&
-        contractAddress !== DEFAULT_CONTRACT_ADDRESS
+        contractAddress
       ) {
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
@@ -180,7 +153,6 @@ export default function Home() {
         await tx.wait();
       }
 
-      // Add to local state list for instant dashboard feedback
       const newDiploma: DiplomaData = {
         diplomaNumber: dNum,
         studentName: sName,
@@ -204,7 +176,7 @@ export default function Home() {
   const handleRefreshIssuedList = async () => {
     setIsLoadingDiplomas(true);
     try {
-      if (contractAddress && contractAddress !== DEFAULT_CONTRACT_ADDRESS) {
+      if (contractAddress) {
         const provider = getReadOnlyProvider();
         const contract = new ethers.Contract(contractAddress, ABI, provider);
         const count = await contract.getDiplomaCount();
@@ -243,29 +215,12 @@ export default function Home() {
         userAddress={userAddress}
         isOwner={isOwner}
         onOpenConnectModal={() => setIsConnectModalOpen(true)}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
       />
 
-      {/* Main Content Area */}
+      {/* Main Content Area: Automatic Switch based on Connect Wallet state */}
       <main className="flex-grow">
-        {activeTab === 'verify' ? (
-          <>
-            {/* 3D Hero Section */}
-            <Hero3D />
-
-            {/* Form Cari Ijazah (Directly below Hero Section) */}
-            <VerifyForm onSearch={handleVerifyDiploma} isLoading={isSearching} />
-
-            {/* Verification Result Card */}
-            <VerificationResult
-              result={searchResult}
-              searchedNumber={searchedNumber}
-              hasSearched={hasSearched}
-            />
-          </>
-        ) : (
-          /* Admin Dashboard Section */
+        {userAddress ? (
+          /* Connect Wallet = true -> Otomatis Tampil Admin Dashboard */
           <AdminDashboard
             isOwner={isOwner}
             userAddress={userAddress}
@@ -274,18 +229,26 @@ export default function Home() {
             isLoading={isLoadingDiplomas}
             onRefreshList={handleRefreshIssuedList}
           />
+        ) : (
+          /* Connect Wallet = false -> Halaman Verifikasi Publik */
+          <>
+            <Hero3D />
+            <VerifyForm onSearch={handleVerifyDiploma} isLoading={isSearching} />
+            <VerificationResult
+              result={searchResult}
+              searchedNumber={searchedNumber}
+              hasSearched={hasSearched}
+            />
+          </>
         )}
       </main>
 
-      {/* Connect Wallet Modal */}
+      {/* Connect Wallet Modal (Literal Wallet Address Form Only) */}
       <ConnectWalletModal
         isOpen={isConnectModalOpen}
         onClose={() => setIsConnectModalOpen(false)}
         userAddress={userAddress}
-        contractAddress={contractAddress}
-        onConnectMetaMask={handleConnectMetaMask}
         onSaveManualAddress={handleSaveManualAddress}
-        onSaveContractAddress={handleSaveContractAddress}
         isOwner={isOwner}
       />
 
