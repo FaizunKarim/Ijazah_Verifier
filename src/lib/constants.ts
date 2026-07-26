@@ -16,8 +16,8 @@ export const BOT_CHAIN_MAINNET = {
   blockExplorerUrl: 'https://scan.botchain.ai',
 };
 
-// Default contract address (bisa diganti via env atau input manual)
-export const DEFAULT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000";
+// Contract Address
+export const DEFAULT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 
 export const SAMPLE_FIRST_DIPLOMA = {
   diplomaNumber: "IJZ-2026-001",
