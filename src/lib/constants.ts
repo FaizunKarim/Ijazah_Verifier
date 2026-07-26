@@ -17,7 +17,7 @@ export const BOT_CHAIN_MAINNET = {
 };
 
 // Contract Address
-export const DEFAULT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
+export const DEFAULT_CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS!;
 
 export const SAMPLE_FIRST_DIPLOMA = {
   diplomaNumber: "IJZ-2026-001",
