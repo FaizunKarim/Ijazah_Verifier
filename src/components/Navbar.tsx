@@ -20,11 +20,11 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-[#f6f6f6] border-b border-[#e5e5e5] transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
         
-        {/* Pojok Kiri Atas: Logo jokowi.webp (Menyatu tanpa lingkaran/shadow) + Nama Aplikasi */}
-        <div className="flex items-center gap-3">
-          <div className="relative w-12 h-12 flex-shrink-0">
+        {/* Pojok Kiri Atas: Logo jokowi.webp (Lebih Besar) + Nama Aplikasi */}
+        <div className="flex items-center gap-4">
+          <div className="relative w-20 h-20 flex-shrink-0">
             <Image
               src="/jokowi.webp"
               alt="Ijazah Verifier Logo"
@@ -34,7 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             />
           </div>
           <div>
-            <span className="font-extrabold text-xl tracking-tight text-slate-900 block leading-tight">
+            <span className="font-extrabold text-2xl tracking-tight text-slate-900 block leading-tight">
               Ijazah<span className="text-blue-600">Verifier</span>
             </span>
             <p className="text-xs text-slate-500 font-medium">Verifikasi Ijazah On-Chain</p>
@@ -45,7 +45,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center gap-3">
           <button
             onClick={onOpenConnectModal}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 shadow-sm ${
+            className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 shadow-sm ${
               userAddress
                 ? 'bg-slate-900 text-white hover:bg-slate-800'
                 : 'bg-blue-600 text-white hover:bg-blue-700 hover:shadow-md hover:shadow-blue-500/20'

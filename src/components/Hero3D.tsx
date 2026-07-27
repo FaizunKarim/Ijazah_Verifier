@@ -70,8 +70,8 @@ export const Hero3D: React.FC = () => {
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400 shadow-md relative">
                     <Image
-                      src="/jokowi.webp"
-                      alt="Institusi Seal"
+                      src="/ugm.webp"
+                      alt="Universitas Gadjah Mada Seal"
                       fill
                       className="object-cover"
                     />
