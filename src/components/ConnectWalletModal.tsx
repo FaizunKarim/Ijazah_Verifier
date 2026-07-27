@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Wallet, CheckCircle2, Copy } from 'lucide-react';
+import { X, Wallet } from 'lucide-react';
 
 interface ConnectWalletModalProps {
   isOpen: boolean;
@@ -16,10 +16,8 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
   onClose,
   userAddress,
   onSaveManualAddress,
-  isOwner,
 }) => {
   const [manualAddrInput, setManualAddrInput] = useState<string>(userAddress || '');
-  const [copied, setCopied] = useState<boolean>(false);
 
   if (!isOpen) return null;
 
@@ -29,12 +27,6 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
       onSaveManualAddress(manualAddrInput.trim());
     }
     onClose();
-  };
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
   };
 
   return (
@@ -83,37 +75,6 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
             Simpan & Hubungkan Wallet
           </button>
         </form>
-
-        {/* Status Indicator */}
-        {userAddress && (
-          <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/80 space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-bold text-blue-900 flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-blue-600" />
-                Wallet Terhubung:
-              </span>
-              <button
-                onClick={() => copyToClipboard(userAddress)}
-                className="text-[10px] font-semibold text-blue-600 hover:underline flex items-center gap-1"
-              >
-                <Copy className="w-3 h-3" />
-                {copied ? 'Tercopy!' : 'Copy'}
-              </button>
-            </div>
-            <p className="font-mono text-xs text-blue-800 break-all font-semibold bg-white p-2 rounded-lg border border-blue-100">
-              {userAddress}
-            </p>
-            {isOwner ? (
-              <span className="inline-block text-[11px] font-bold bg-emerald-100 text-emerald-800 px-2.5 py-0.5 rounded-full">
-                👑 Status: OWNER / ADMIN CONTRACT
-              </span>
-            ) : (
-              <span className="inline-block text-[11px] font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">
-                👤 Status: Publik User / Guest Wallet
-              </span>
-            )}
-          </div>
-        )}
 
       </div>
     </div>
