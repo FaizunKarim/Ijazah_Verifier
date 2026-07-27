@@ -23,16 +23,16 @@ export const Hero3D: React.FC = () => {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.15]">
-              Verifikasi Keaslian Ijazah <br className="hidden sm:inline" />
+            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
+              Verifikasi{' '}
               <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
-                Instan & Permanen
-              </span> On-Chain
+                Keaslian Ijazah
+              </span>
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg sm:text-xl text-slate-600 font-normal max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Mencegah pemalsuan dokumen akademik secara mutlak. Data ijazah diterbitkan ke smart contract secara tak terubah (*immutable*) dan dapat diverifikasi oleh publik tanpa perlu koneksi wallet.
+            <p className="text-xl sm:text-2xl text-slate-600 font-medium max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+              Verifikasi Ijazah melalui On Chain. Mencegah pemalsuan dokumen akademik secara mutlak.
             </p>
 
             {/* Key Benefits Pills */}
