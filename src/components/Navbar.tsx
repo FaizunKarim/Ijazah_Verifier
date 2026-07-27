@@ -19,17 +19,17 @@ export const Navbar: React.FC<NavbarProps> = ({
     : null;
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-slate-100 shadow-sm transition-all">
+    <header className="sticky top-0 z-40 bg-[#f6f6f6] border-b border-[#e5e5e5] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         
-        {/* Pojok Kiri Atas: Logo (jokowi.webp) + Nama Aplikasi */}
+        {/* Pojok Kiri Atas: Logo jokowi.webp (Menyatu tanpa lingkaran/shadow) + Nama Aplikasi */}
         <div className="flex items-center gap-3">
-          <div className="relative w-11 h-11 rounded-full overflow-hidden border-2 border-blue-600/30 shadow-md transition-transform hover:scale-105">
+          <div className="relative w-12 h-12 flex-shrink-0">
             <Image
               src="/jokowi.webp"
               alt="Ijazah Verifier Logo"
               fill
-              className="object-cover"
+              className="object-contain"
               priority
             />
           </div>
