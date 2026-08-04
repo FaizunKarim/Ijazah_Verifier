@@ -35,6 +35,42 @@ export default function Home() {
     return new ethers.JsonRpcProvider(BOT_CHAIN_MAINNET.rpcUrl);
   };
 
+  // Helper to switch MetaMask network to BOT Chain Mainnet automatically
+  const switchToBotChain = async () => {
+    if (typeof window !== 'undefined' && window.ethereum) {
+      try {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: BOT_CHAIN_MAINNET.chainIdHex }], // '0x2A5' (Chain ID 677)
+        });
+      } catch (switchError: unknown) {
+        const errObj = switchError as { code?: number };
+        if (errObj && errObj.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  chainId: BOT_CHAIN_MAINNET.chainIdHex,
+                  chainName: BOT_CHAIN_MAINNET.chainName,
+                  rpcUrls: [BOT_CHAIN_MAINNET.rpcUrl],
+                  nativeCurrency: {
+                    name: 'BOT Token',
+                    symbol: BOT_CHAIN_MAINNET.currencySymbol,
+                    decimals: 18,
+                  },
+                  blockExplorerUrls: [BOT_CHAIN_MAINNET.blockExplorerUrl],
+                },
+              ],
+            });
+          } catch (addError) {
+            console.error('Failed to add BOT Chain to MetaMask', addError);
+          }
+        }
+      }
+    }
+  };
+
   // Check if connected address is owner dynamically from Smart Contract
   const checkOwnerStatus = useCallback((addr: string, ownerAddr: string) => {
     if (!addr || !ownerAddr) {
@@ -156,6 +192,9 @@ export default function Home() {
         window.ethereum &&
         contractAddress
       ) {
+        // Automatically switch MetaMask network to BOT Chain Mainnet before transaction
+        await switchToBotChain();
+
         const provider = new ethers.BrowserProvider(window.ethereum);
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(contractAddress, ABI, signer);
