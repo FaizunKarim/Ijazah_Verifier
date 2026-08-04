@@ -166,7 +166,7 @@ export default function Home() {
         degree: deg,
         graduationYear: gYear,
         issueDate: Math.floor(Date.now() / 1000),
-        issuer: userAddress || contractOwner || '0x383326ad73B522D82889d41BE9a71DA16f8EeC65',
+        issuer: userAddress || contractOwner,
         isValid: true,
       };
 
