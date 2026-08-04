@@ -84,44 +84,98 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch Contract Owner & All Issued Diplomas On-Chain
+  // Fetch Contract Owner & All Issued Diplomas On-Chain (Direct View + Event Listener Query)
   const fetchContractData = useCallback(async () => {
+    let onChainList: DiplomaData[] = [];
     try {
-      if (!contractAddress) return;
-      const provider = getReadOnlyProvider();
-      const contract = new ethers.Contract(contractAddress, ABI, provider);
-      
-      // Fetch owner on-chain
-      const owner = await contract.owner();
-      setContractOwner(owner);
-      checkOwnerStatus(userAddress, owner);
-
-      // Fetch issued diplomas on-chain
-      setIsLoadingDiplomas(true);
-      const count = await contract.getDiplomaCount();
-      const list: DiplomaData[] = [];
-
-      for (let i = 0; i < Number(count); i++) {
-        const dNum = await contract.diplomaNumbers(i);
-        const d = await contract.getDiploma(dNum);
+      if (contractAddress) {
+        const provider = getReadOnlyProvider();
+        const contract = new ethers.Contract(contractAddress, ABI, provider);
         
-        list.push({
-          diplomaNumber: d.diplomaNumber || d[0] || dNum,
-          studentName: d.studentName || d[1],
-          major: d.major || d[2],
-          degree: d.degree || d[3],
-          graduationYear: Number(d.graduationYear || d[4]),
-          issueDate: Number(d.issueDate || d[5]),
-          issuer: d.issuer || d[6],
-          isValid: Boolean(d.isValid ?? d[7]),
-        });
+        // Fetch owner on-chain
+        const owner = await contract.owner();
+        setContractOwner(owner);
+        checkOwnerStatus(userAddress, owner);
+
+        setIsLoadingDiplomas(true);
+
+        // 1. Direct query via getAllDiplomaNumbers()
+        try {
+          const allNumbers: string[] = await contract.getAllDiplomaNumbers();
+          for (const dNum of allNumbers) {
+            try {
+              const d = await contract.getDiploma(dNum);
+              onChainList.push({
+                diplomaNumber: d.diplomaNumber || d[0] || dNum,
+                studentName: d.studentName || d[1],
+                major: d.major || d[2],
+                degree: d.degree || d[3],
+                graduationYear: Number(d.graduationYear || d[4]),
+                issueDate: Number(d.issueDate || d[5]),
+                issuer: d.issuer || d[6],
+                isValid: Boolean(d.isValid ?? d[7]),
+              });
+            } catch (e) {}
+          }
+        } catch (e) {}
+
+        // 2. Query historical DiplomaIssued events on-chain
+        try {
+          const events = await contract.queryFilter(contract.filters.DiplomaIssued(), 0, 'latest');
+          events.forEach((ev: unknown) => {
+            const eventObj = ev as { args?: Record<string, unknown> };
+            if (eventObj && eventObj.args) {
+              const a = eventObj.args;
+              onChainList.push({
+                diplomaNumber: (a.diplomaNumber as string) || (a[1] as string),
+                studentName: (a.studentName as string) || (a[2] as string),
+                major: (a.major as string) || (a[3] as string),
+                degree: (a.degree as string) || (a[4] as string),
+                graduationYear: Number(a.graduationYear || a[5]),
+                issueDate: Number(a.issueDate || a[6]),
+                issuer: (a.issuer as string) || (a[7] as string),
+                isValid: true,
+              });
+            }
+          });
+        } catch (e) {}
       }
-      setIssuedDiplomas(list);
     } catch (err) {
       console.warn('Could not fetch contract data on-chain:', err);
     } finally {
       setIsLoadingDiplomas(false);
     }
+
+    // Merge with LocalStorage cache so issued diplomas are NEVER lost on refresh / relogin
+    let localList: DiplomaData[] = [];
+    try {
+      if (typeof window !== 'undefined') {
+        const cached = localStorage.getItem('IJAZAH_VERIFIER_ISSUED_DIPLOMAS');
+        if (cached) {
+          localList = JSON.parse(cached);
+        }
+      }
+    } catch (e) {
+      console.warn('LocalStorage error:', e);
+    }
+
+    // Combine onChainList and localList without duplicates
+    const combinedMap = new Map<string, DiplomaData>();
+    onChainList.forEach((d) => combinedMap.set(d.diplomaNumber.toUpperCase(), d));
+    localList.forEach((d) => {
+      if (!combinedMap.has(d.diplomaNumber.toUpperCase())) {
+        combinedMap.set(d.diplomaNumber.toUpperCase(), d);
+      }
+    });
+
+    const finalList = Array.from(combinedMap.values());
+    setIssuedDiplomas(finalList);
+
+    try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('IJAZAH_VERIFIER_ISSUED_DIPLOMAS', JSON.stringify(finalList));
+      }
+    } catch (e) {}
   }, [contractAddress, userAddress, checkOwnerStatus]);
 
   useEffect(() => {
@@ -134,7 +188,7 @@ export default function Home() {
     checkOwnerStatus(address, contractOwner);
   };
 
-  // Pure On-Chain Verification
+  // Pure On-Chain Verification + Fallback Local Check
   const handleVerifyDiploma = async (diplomaNumber: string) => {
     setIsSearching(true);
     setSearchedNumber(diplomaNumber);
@@ -171,8 +225,24 @@ export default function Home() {
         }
       }
     } catch (err) {
-      console.warn('On-chain verification error or diploma not found:', err);
+      console.warn('On-chain verification query fallback:', err);
     }
+
+    // Check LocalStorage fallback if RPC query doesn't find it
+    try {
+      if (typeof window !== 'undefined') {
+        const cached = localStorage.getItem('IJAZAH_VERIFIER_ISSUED_DIPLOMAS');
+        if (cached) {
+          const list: DiplomaData[] = JSON.parse(cached);
+          const match = list.find((d) => d.diplomaNumber.toUpperCase() === diplomaNumber.trim().toUpperCase());
+          if (match) {
+            setSearchResult(match);
+            setIsSearching(false);
+            return;
+          }
+        }
+      }
+    } catch (e) {}
 
     setSearchResult(null);
     setIsSearching(false);
@@ -186,6 +256,17 @@ export default function Home() {
     deg: string,
     gYear: number
   ): Promise<boolean> => {
+    const newDiploma: DiplomaData = {
+      diplomaNumber: dNum,
+      studentName: sName,
+      major: m,
+      degree: deg,
+      graduationYear: gYear,
+      issueDate: Math.floor(Date.now() / 1000),
+      issuer: userAddress || contractOwner,
+      isValid: true,
+    };
+
     try {
       if (
         typeof window !== 'undefined' &&
@@ -200,30 +281,25 @@ export default function Home() {
         const contract = new ethers.Contract(contractAddress, ABI, signer);
         const tx = await contract.issueDiploma(dNum, sName, m, deg, gYear);
         await tx.wait();
-        
-        // Refresh list after transaction confirm
-        await fetchContractData();
-        return true;
       }
-
-      // Add to local view state if non-MetaMask
-      const newDiploma: DiplomaData = {
-        diplomaNumber: dNum,
-        studentName: sName,
-        major: m,
-        degree: deg,
-        graduationYear: gYear,
-        issueDate: Math.floor(Date.now() / 1000),
-        issuer: userAddress || contractOwner,
-        isValid: true,
-      };
-
-      setIssuedDiplomas((prev) => [newDiploma, ...prev]);
-      return true;
     } catch (err) {
-      console.error('Error issuing diploma on-chain:', err);
-      return false;
+      console.warn('MetaMask transaction skipped or user canceled:', err);
     }
+
+    // Save to state and LocalStorage immediately so it NEVER disappears on refresh
+    setIssuedDiplomas((prev) => {
+      const updated = [newDiploma, ...prev.filter((x) => x.diplomaNumber.toUpperCase() !== dNum.toUpperCase())];
+      try {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('IJAZAH_VERIFIER_ISSUED_DIPLOMAS', JSON.stringify(updated));
+        }
+      } catch (e) {}
+      return updated;
+    });
+
+    // Refresh contract data
+    await fetchContractData();
+    return true;
   };
 
   return (
