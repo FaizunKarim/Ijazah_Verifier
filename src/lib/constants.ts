@@ -20,4 +20,4 @@ export const BOT_CHAIN_MAINNET = {
 export const DEFAULT_CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || "";
 
 // Admin Passkey dipanggil murni dari env
-export const ADMIN_PASSKEY = process.env.PASSKEY || "admin123";
+export const ADMIN_PASSKEY = process.env.PASSKEY || "";
