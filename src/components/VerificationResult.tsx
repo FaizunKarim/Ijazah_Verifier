@@ -67,7 +67,7 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
   // Helper pintar untuk memformat letak Gelar (Depan vs Belakang Nama)
   const formatFullNameWithDegree = (name: string, degree: string) => {
     if (!degree) return name;
-    
+
     const cleanDegree = degree.trim();
     const prefixTitles = ['ir', 'ir.', 'dr', 'dr.', 'drs', 'drs.', 'prof', 'prof.', 'h', 'h.', 'hj', 'hj.'];
     const firstWord = cleanDegree.toLowerCase().split(' ')[0];
@@ -88,10 +88,10 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-16 animate-in fade-in slide-in-from-bottom-4 duration-400">
-      
+
       {/* Container Utuh Hasil Verifikasi */}
       <div className="bg-white rounded-3xl border border-slate-200/90 shadow-2xl overflow-hidden">
-        
+
         {/* Banner Top Status: VERIFIED */}
         <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 p-6 sm:p-8 text-white flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-4 text-center sm:text-left">
@@ -116,9 +116,9 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
 
         {/* MODEL IJAZAH DIGITAL RESMI (TANPA LOGO, DENGAN FRAME BORDER ELEGAN) */}
         <div className="p-6 sm:p-10 bg-slate-100">
-          
+
           <div id="printable-certificate" className="bg-[#fffdf9] border-8 border-double border-amber-800/30 rounded-2xl p-8 sm:p-12 shadow-inner relative overflow-hidden space-y-8">
-            
+
             {/* Header Model Ijazah (Tanpa Logo) */}
             <div className="text-center space-y-2 relative z-10 border-b-2 border-amber-900/20 pb-6">
               <h1 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 tracking-wide uppercase">
@@ -140,9 +140,6 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
                 <h3 className="text-3xl sm:text-4xl font-serif font-black text-slate-900 tracking-tight">
                   {formattedFullName}
                 </h3>
-                <p className="text-xs font-mono text-slate-500 uppercase tracking-widest">
-                  (NAMA LENGKAP MAHASISWA & GELAR)
-                </p>
               </div>
 
               <p className="text-sm font-serif text-slate-700 leading-relaxed max-w-2xl mx-auto">
@@ -152,7 +149,7 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
 
             {/* Footer Model Ijazah & On-Chain Verification Stamp */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t-2 border-amber-900/20 relative z-10 items-end">
-              
+
               {/* Left Side: Stempel Digital On-Chain */}
               <div className="space-y-2 text-center md:text-left">
                 <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-300 text-emerald-900 px-4 py-2 rounded-xl text-xs font-bold shadow-xs">
