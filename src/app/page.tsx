@@ -84,7 +84,7 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch Contract Owner & All Issued Diplomas On-Chain (Direct View + Event Listener Query)
+  // Fetch Contract Owner & All Issued Diplomas On-Chain (Strict On-Chain Source of Truth)
   const fetchContractData = useCallback(async () => {
     let onChainList: DiplomaData[] = [];
     try {
@@ -105,16 +105,18 @@ export default function Home() {
           for (const dNum of allNumbers) {
             try {
               const d = await contract.getDiploma(dNum);
-              onChainList.push({
-                diplomaNumber: d.diplomaNumber || d[0] || dNum,
-                studentName: d.studentName || d[1],
-                major: d.major || d[2],
-                degree: d.degree || d[3],
-                graduationYear: Number(d.graduationYear || d[4]),
-                issueDate: Number(d.issueDate || d[5]),
-                issuer: d.issuer || d[6],
-                isValid: Boolean(d.isValid ?? d[7]),
-              });
+              if (d && (d.isValid || d[7])) {
+                onChainList.push({
+                  diplomaNumber: d.diplomaNumber || d[0] || dNum,
+                  studentName: d.studentName || d[1],
+                  major: d.major || d[2],
+                  degree: d.degree || d[3],
+                  graduationYear: Number(d.graduationYear || d[4]),
+                  issueDate: Number(d.issueDate || d[5]),
+                  issuer: d.issuer || d[6],
+                  isValid: true,
+                });
+              }
             } catch (e) {}
           }
         } catch (e) {}
@@ -126,16 +128,19 @@ export default function Home() {
             const eventObj = ev as { args?: Record<string, unknown> };
             if (eventObj && eventObj.args) {
               const a = eventObj.args;
-              onChainList.push({
-                diplomaNumber: (a.diplomaNumber as string) || (a[1] as string),
-                studentName: (a.studentName as string) || (a[2] as string),
-                major: (a.major as string) || (a[3] as string),
-                degree: (a.degree as string) || (a[4] as string),
-                graduationYear: Number(a.graduationYear || a[5]),
-                issueDate: Number(a.issueDate || a[6]),
-                issuer: (a.issuer as string) || (a[7] as string),
-                isValid: true,
-              });
+              const dNum = (a.diplomaNumber as string) || (a[1] as string);
+              if (dNum) {
+                onChainList.push({
+                  diplomaNumber: dNum,
+                  studentName: (a.studentName as string) || (a[2] as string),
+                  major: (a.major as string) || (a[3] as string),
+                  degree: (a.degree as string) || (a[4] as string),
+                  graduationYear: Number(a.graduationYear || a[5]),
+                  issueDate: Number(a.issueDate || a[6]),
+                  issuer: (a.issuer as string) || (a[7] as string),
+                  isValid: true,
+                });
+              }
             }
           });
         } catch (e) {}
@@ -146,31 +151,14 @@ export default function Home() {
       setIsLoadingDiplomas(false);
     }
 
-    // Merge with LocalStorage cache so issued diplomas are NEVER lost on refresh / relogin
-    let localList: DiplomaData[] = [];
-    try {
-      if (typeof window !== 'undefined') {
-        const cached = localStorage.getItem('IJAZAH_VERIFIER_ISSUED_DIPLOMAS');
-        if (cached) {
-          localList = JSON.parse(cached);
-        }
-      }
-    } catch (e) {
-      console.warn('LocalStorage error:', e);
-    }
-
-    // Combine onChainList and localList without duplicates
+    // Deduplicate on-chain records
     const combinedMap = new Map<string, DiplomaData>();
     onChainList.forEach((d) => combinedMap.set(d.diplomaNumber.toUpperCase(), d));
-    localList.forEach((d) => {
-      if (!combinedMap.has(d.diplomaNumber.toUpperCase())) {
-        combinedMap.set(d.diplomaNumber.toUpperCase(), d);
-      }
-    });
-
     const finalList = Array.from(combinedMap.values());
+
     setIssuedDiplomas(finalList);
 
+    // Sync clean list to LocalStorage (clears out any old failed records)
     try {
       if (typeof window !== 'undefined') {
         localStorage.setItem('IJAZAH_VERIFIER_ISSUED_DIPLOMAS', JSON.stringify(finalList));
@@ -248,7 +236,7 @@ export default function Home() {
     setIsSearching(false);
   };
 
-  // Issue New Diploma On-Chain via Wallet / MetaMask
+  // Issue New Diploma On-Chain via Wallet / MetaMask (Strict Transaction Validation)
   const handleIssueDiploma = async (
     dNum: string,
     sName: string,
@@ -267,12 +255,13 @@ export default function Home() {
       isValid: true,
     };
 
-    try {
-      if (
-        typeof window !== 'undefined' &&
-        window.ethereum &&
-        contractAddress
-      ) {
+    // If MetaMask is installed, execute transaction on-chain strictly
+    if (
+      typeof window !== 'undefined' &&
+      window.ethereum &&
+      contractAddress
+    ) {
+      try {
         // Automatically switch MetaMask network to BOT Chain Mainnet before transaction
         await switchToBotChain();
 
@@ -280,13 +269,35 @@ export default function Home() {
         const signer = await provider.getSigner();
         const contract = new ethers.Contract(contractAddress, ABI, signer);
         const tx = await contract.issueDiploma(dNum, sName, m, deg, gYear);
-        await tx.wait();
+        
+        // Wait for on-chain block mining confirmation
+        const receipt = await tx.wait();
+        if (!receipt || receipt.status !== 1) {
+          throw new Error('Transaksi gagal di blockchain.');
+        }
+
+        // Save to state and LocalStorage ONLY IF transaction succeeded
+        setIssuedDiplomas((prev) => {
+          const updated = [newDiploma, ...prev.filter((x) => x.diplomaNumber.toUpperCase() !== dNum.toUpperCase())];
+          try {
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('IJAZAH_VERIFIER_ISSUED_DIPLOMAS', JSON.stringify(updated));
+            }
+          } catch (e) {}
+          return updated;
+        });
+
+        // Refresh contract data
+        await fetchContractData();
+        return true;
+      } catch (err: unknown) {
+        console.error('MetaMask transaction failed or canceled:', err);
+        // Throw error back to AdminDashboard so it displays error alert and DOES NOT record failed diploma
+        throw err;
       }
-    } catch (err) {
-      console.warn('MetaMask transaction skipped or user canceled:', err);
     }
 
-    // Save to state and LocalStorage immediately so it NEVER disappears on refresh
+    // Manual Local Fallback mode (only if window.ethereum is not present)
     setIssuedDiplomas((prev) => {
       const updated = [newDiploma, ...prev.filter((x) => x.diplomaNumber.toUpperCase() !== dNum.toUpperCase())];
       try {
@@ -297,8 +308,6 @@ export default function Home() {
       return updated;
     });
 
-    // Refresh contract data
-    await fetchContractData();
     return true;
   };
 

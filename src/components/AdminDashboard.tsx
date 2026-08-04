@@ -122,8 +122,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         setMsg({ type: 'error', text: 'Gagal menerbitkan ijazah. Periksa transaksi MetaMask Anda.' });
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : 'Terjadi kesalahan sistem';
-      setMsg({ type: 'error', text: errorMessage });
+      console.error('Error issuing diploma:', err);
+      setMsg({
+        type: 'error',
+        text: 'Transaksi Dibatalkan / Gagal: Saldo BOT tidak mencukupi untuk Gas Fee atau transaksi ditolak di MetaMask.',
+      });
     } finally {
       setIsSubmitting(false);
     }
