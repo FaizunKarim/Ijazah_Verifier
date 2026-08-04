@@ -2,269 +2,60 @@
 
 ## Project Information
 
--   **Project Name:** Ijazah Verifier
--   **Version:** 1.0 (MVP Hackathon)
--   **Platform:** BOT Chain (EVM)
--   **Application Type:** Decentralized Application (DApp)
+- **Project Name:** Ijazah Verifier
+- **Version:** 1.0 (Build Week Hackathon)
+- **Platform:** BOT Chain Mainnet (EVM) - Chain ID 677
+- **Contract Address:** `0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053`
+- **Application Type:** Decentralized Application (DApp)
 
-------------------------------------------------------------------------
+---
 
 # 1. Overview
 
 ## Description
 
-Ijazah Verifier adalah aplikasi berbasis blockchain yang memungkinkan
-institusi pendidikan menerbitkan data ijazah ke BOT Chain dan
-memungkinkan siapa pun memverifikasi keaslian ijazah melalui website.
+Ijazah Verifier adalah aplikasi berbasis blockchain yang memungkinkan institusi pendidikan menerbitkan data ijazah ke BOT Chain Mainnet dan memungkinkan siapa pun memverifikasi keaslian ijazah melalui website tanpa perlu mengoneksikan wallet.
 
-Seluruh data ijazah disimpan di Smart Contract sehingga tidak dapat
-diubah setelah diterbitkan.
+Seluruh data ijazah disimpan di Smart Contract secara tak terubah (*immutable*).
 
-------------------------------------------------------------------------
+---
 
-# 2. Problem Statement
+# 2. Objectives & Key Improvements
 
-Proses verifikasi ijazah masih bergantung pada institusi penerbit
-sehingga membutuhkan waktu dan bergantung pada sistem terpusat.
+- Menerbitkan data ijazah ke BOT Chain Mainnet dengan jaminan transaksi gas fee koin BOT.
+- Proteksi ganda Admin via Autentikasi Wallet Owner (`onlyOwner`) + Passkey (`PASSKEY`).
+- Generator otomatis Nomor Ijazah Unik 12 Karakter Angka (`IDN-XXXX-XXXX`) yang terkunci (*read-only*) dan bebas dari duplikasi.
+- Menampilkan hasil verifikasi berbentuk **Model Sertifikat Ijazah Digital Resmi** dengan pemformatan gelar pintar (Gelar Depan seperti `Ir.` vs Gelar Belakang seperti `S.Hut.`).
+- Fitur Ekspor & Cetak PDF Ijazah secara bersih menggunakan stylesheet `@media print`.
 
-Dengan blockchain, data ijazah dapat diterbitkan secara permanen
-sehingga siapa pun dapat melakukan verifikasi secara mandiri melalui
-website.
+---
 
-------------------------------------------------------------------------
-
-# 3. Objectives
-
--   Menerbitkan data ijazah ke BOT Chain.
--   Memastikan hanya Admin yang dapat menerbitkan ijazah.
--   Memungkinkan publik memverifikasi ijazah.
--   Menampilkan hasil verifikasi langsung dari blockchain.
-
-------------------------------------------------------------------------
-
-# 4. Users
-
-## Admin
-
-Institusi pendidikan.
-
-Pada MVP, Admin adalah wallet yang melakukan deploy Smart Contract.
+# 3. User Flow
 
 ## Public User
-
--   HRD
--   Perusahaan
--   Alumni
--   Masyarakat
-
-Public User tidak memerlukan wallet.
-
-------------------------------------------------------------------------
-
-# 5. MVP Scope
-
-## Public Features
-
--   Home Page
--   Verify Diploma
--   View Verification Result
-
-## Admin Features
-
--   Connect Wallet
--   Admin Dashboard
--   Issue Diploma
--   Diploma List
--   Diploma Detail
-
-------------------------------------------------------------------------
-
-# 6. Out of Scope
-
--   Login / Register
--   Multi Admin
--   Multi University
--   Upload PDF
--   QR Code
--   OCR
--   AI Verification
--   Database
--   Backend API
--   Edit/Delete Diploma
-
-------------------------------------------------------------------------
-
-# 7. User Flow
-
-## Public
-
-``` text
-Home
- ↓
-Input Diploma Number
- ↓
-Verify
- ↓
-Read Smart Contract
- ↓
-Result
+```text
+Home Page -> Input Nomor Ijazah (IDN-XXXX-XXXX) -> Verifikasi On-Chain -> Model Sertifikat Ijazah Digital -> Cetak PDF / Verifikasi di Explorer
 ```
 
-## Admin
-
-``` text
-Home
- ↓
-Connect Wallet
- ↓
-Wallet == Owner ?
- ├── Yes → Dashboard
- └── No  → Access Denied
+## Admin (Institusi)
+```text
+Home Page -> Connect Wallet Modal -> Input Wallet Address + Sandi Admin (PASSKEY) -> Pengecekan Owner & Passkey -> Admin Dashboard (Terbitkan Ijazah Unik Terkunci)
 ```
 
-------------------------------------------------------------------------
+---
 
-# 8. Pages
+# 4. Functional Requirements
 
-## Home
+- **Connect Wallet & Passkey Auth:** Autentikasi ganda wallet address owner + Passkey env.
+- **Auto Network Switcher:** Beralih otomatis ke BOT Chain Mainnet (Chain ID 677).
+- **Auto-Generate Locked Diploma ID:** Menghasilkan nomor unik 12-digit `IDN-XXXX-XXXX` tanpa duplikasi.
+- **Issue Diploma On-Chain:** Mengirim data ijazah ke Smart Contract `0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053`.
+- **Public Verification & PDF Export:** Pencarian publik tanpa wallet, menampilkan sertifikat digital resmi dan opsi cetak PDF.
 
--   Logo
--   Connect Wallet (Top Right)
--   Hero
--   Diploma Number Input
--   Verify Button
--   About Section
+---
 
-## Dashboard
+# 5. Smart Contract Specifications
 
--   Overview
--   Issue Diploma
--   Diploma List
--   Diploma Detail
-
-------------------------------------------------------------------------
-
-# 9. Functional Requirements
-
--   Connect MetaMask
--   Detect Owner Wallet
--   Issue Diploma
--   Verify Diploma
--   Read Diploma Detail
--   Public Read Access
-
-------------------------------------------------------------------------
-
-# 10. Smart Contract
-
-## Struct
-
-``` solidity
-struct Diploma {
-    string diplomaNumber;
-    string studentName;
-    string major;
-    string degree;
-    uint16 graduationYear;
-    uint256 issueDate;
-    address issuer;
-    bool isValid;
-}
-```
-
-## Variables
-
-``` solidity
-address public owner;
-
-mapping(string => Diploma) diplomas;
-```
-
-## Functions
-
-``` solidity
-issueDiploma()
-
-getDiploma()
-
-verifyDiploma()
-```
-
-## Modifier
-
-``` solidity
-onlyOwner
-```
-
-------------------------------------------------------------------------
-
-# 11. Technology Stack
-
-## Frontend
-
--   Next.js
--   TypeScript
--   Tailwind CSS
--   ethers.js
-
-## Blockchain
-
--   Solidity
--   BOT Chain
-
-## Wallet
-
--   MetaMask
-
-## Deployment
-
--   Vercel
--   BOT Chain Mainnet
-
-## Database
-
-Tidak digunakan.
-
-Blockchain menjadi satu-satunya source of truth.
-
-------------------------------------------------------------------------
-
-# 12. Success Criteria
-
--   Website online.
--   Wallet owner dapat login.
--   Admin dapat menerbitkan ijazah.
--   Data tersimpan di blockchain.
--   Publik dapat memverifikasi ijazah.
--   Demo berjalan tanpa error.
-
-------------------------------------------------------------------------
-
-# 13. Future Improvements
-
--   Multi University
--   Multi Admin
--   QR Code Verification
--   IPFS Integration
--   PDF Hash Storage
--   Batch Issuing
--   Diploma Revocation
-
-------------------------------------------------------------------------
-
-# 14. System Architecture
-
-``` text
-                 Public User
-                      │
-                      ▼
-              Next.js Frontend
-                      │
-                 ethers.js
-                      │
-                      ▼
-           BOT Chain Smart Contract
-                      │
-                      ▼
-              Diploma Storage
-```
+- **Contract Name:** `IjazahVerifier`
+- **Address:** `0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053`
+- **Functions:** `issueDiploma()`, `verifyDiploma()`, `getDiploma()`, `getAllDiplomaNumbers()`, `getDiplomaCount()`

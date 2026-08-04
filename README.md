@@ -1,6 +1,6 @@
 # 🎓 Ijazah Verifier - On-Chain Diploma Verification DApp
 
-**Ijazah Verifier** is a decentralized application (DApp) built on **BOT Chain (EVM)** that enables educational institutions to issue tamper-proof diploma records on-chain while allowing anyone (employers, HRDs, alumni, and the public) to instantly verify their authenticity without requiring a crypto wallet.
+**Ijazah Verifier** is a decentralized application (DApp) built on **BOT Chain Mainnet (EVM)** that enables educational institutions to issue tamper-proof diploma records on-chain while allowing anyone (employers, HRDs, alumni, and the public) to instantly verify their authenticity without requiring a crypto wallet.
 
 ---
 
@@ -14,15 +14,16 @@
 ## ✨ Features
 
 ### 🔍 For Public Users & Employers (No Wallet Required)
-* **Instant Verification:** Input a Diploma ID (e.g., `IJZ-2026-001`) or click the quick sample option.
-* **On-Chain Truth:** View complete student metadata (Name, Major, Degree, Graduation Year, Issue Timestamp, Issuer Wallet Address).
-* **Block Explorer Link:** Directly verify the transaction on the BOT Chain Block Explorer (`scan.bohr.life`).
+* **Instant On-Chain Verification:** Input a 12-digit Diploma ID (e.g., `IDN-8492-3019`).
+* **Official Digital Diploma Certificate View:** Renders an elegant academic certificate format with double gold border styling, smart degree positioning (e.g., `Ir. Joko Widodo` or `Joko Widodo, S.Hut.`), and an on-chain verification stamp.
+* **Print & Export PDF:** Built-in PDF print stylesheet (`@media print`) allowing users to download or print clean, standalone official digital diploma certificates.
+* **Direct Explorer Verification:** Direct link to inspect the deployed smart contract on BOT Chain Explorer (`https://scan.botchain.ai/address/0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053`).
 
 ### 🛡️ For Educational Institutions (Admin / Contract Owner)
-* **Secure Access Control (`onlyOwner`):** Only the wallet that deployed the Smart Contract can issue diplomas.
-* **Issue New Diploma:** Intuitive 2-column form for registering student diploma records directly to the blockchain.
-* **Issued Diploma Dashboard:** Interactive table showing all registered on-chain records.
-* **Dual Wallet Connection:** Automatic MetaMask detection + manual Wallet Address input field.
+* **Secure Dual-Layer Authentication (`onlyOwner` + Passkey):** Access requires both the contract owner's wallet address and the admin passkey (`PASSKEY`).
+* **Auto-Generated Locked Diploma ID:** System automatically generates unique 12-character numeric IDs (`IDN-XXXX-XXXX`), locked against manual editing and guaranteed duplicate-free.
+* **Automatic MetaMask Network Switcher:** Automatically prompts MetaMask to switch to **BOT Chain Mainnet (Chain ID 677)** with native **BOT Token** gas fee.
+* **On-Chain Event Filter & Local Storage Sync:** Real-time synchronization of `DiplomaIssued` events and `getAllDiplomaNumbers()` with LocalStorage fallback, ensuring issued records never disappear on refresh.
 
 ---
 
@@ -30,9 +31,11 @@
 
 * **File Path:** [`IjazahVerifier.sol`](./IjazahVerifier.sol)
 * **Solidity Version:** `^0.8.20`
-* **Target Blockchain:** BOT Chain (EVM)
-  * **Testnet Chain ID:** `968` | RPC: `https://rpc.bohr.life` | Explorer: `https://scan.bohr.life`
-  * **Mainnet Chain ID:** `677` | RPC: `https://rpc.botchain.ai` | Explorer: `https://scan.botchain.ai`
+* **Deployed Contract Address:** [`0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053`](https://scan.botchain.ai/address/0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053)
+* **Target Blockchain:** BOT Chain Mainnet (EVM)
+  * **Chain ID:** `677` (`0x2A5`)
+  * **RPC URL:** `https://rpc.botchain.ai`
+  * **Block Explorer:** `https://scan.botchain.ai`
 
 ### Core Smart Contract Data Structure & Functions
 
@@ -59,11 +62,11 @@ function getAllDiplomaNumbers() public view returns (string[] memory)
 
 ## 💻 Tech Stack
 
-* **Frontend Framework:** Next.js 15 (App Router, TypeScript)
-* **Styling & Design System:** Tailwind CSS v3, Lucide Icons, Custom 3D Glassmorphism
+* **Frontend Framework:** Next.js 16 (App Router, TypeScript)
+* **Styling & Design System:** Tailwind CSS, Lucide Icons, Canvas Confetti
 * **Blockchain Interoperability:** ethers.js v6
 * **Smart Contract:** Solidity `^0.8.20`, Remix IDE
-* **Network:** BOT Chain Testnet / Mainnet (EVM Compatible)
+* **Network:** BOT Chain Mainnet (EVM Compatible)
 
 ---
 
@@ -72,7 +75,6 @@ function getAllDiplomaNumbers() public view returns (string[] memory)
 ### Prerequisites
 * Node.js v18.x or higher
 * npm or yarn
-* MetaMask Wallet Extension (Optional for Admin testing)
 
 ### Installation Steps
 
@@ -82,18 +84,24 @@ function getAllDiplomaNumbers() public view returns (string[] memory)
    cd Ijazah_Verifier
    ```
 
-2. **Install dependencies:**
+2. **Configure Environment Variables (`.env.local`):**
+   ```env
+   CONTRACT_ADDRESS=0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053
+   PASSKEY=Izunkarim1
+   ```
+
+3. **Install dependencies:**
    ```bash
    npm install
    ```
 
-3. **Run the development server:**
+4. **Run the development server:**
    ```bash
    npm run dev
    ```
 
-4. **Open your browser:**
-   Navigate to [http://localhost:3000](http://localhost:3000) to view the live application.
+5. **Open your browser:**
+   Navigate to [http://localhost:3000](http://localhost:3000) to view the application.
 
 ---
 
