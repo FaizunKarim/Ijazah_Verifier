@@ -11,12 +11,17 @@
 
 ---
 
-## ✨ Features
+## ✨ Key Features
+
+### 🌐 Multi-Language Support (Bilingual ID 🇮🇩 / EN 🇬🇧)
+* **Instant Language Toggle:** Seamlessly switch between **Bahasa Indonesia (ID)** and **English (EN)** via the Navbar language selector.
+* **Bilingual Certificate & PDF Download:** Switching language dynamically updates the website UI AND the generated Official Digital Diploma Certificate, so downloaded PDF certificates follow the selected language (`IJAZAH AKADEMIK` vs `ACADEMIC DIPLOMA`).
 
 ### 🔍 For Public Users & Employers (No Wallet Required)
-* **Instant On-Chain Verification:** Input a 12-digit Diploma ID (e.g., `IDN-8492-3019`).
+* **Interactive Dropdown Recommendation:** Clicking/focusing the search field opens an interactive mockup dropdown for quick demo testing (`IDN-2789-3245` • Ir. Joko Widodo).
+* **Instant On-Chain Verification:** Verify any 12-digit Diploma ID (e.g., `IDN-XXXX-XXXX`) directly against the smart contract.
 * **Official Digital Diploma Certificate View:** Renders an elegant academic certificate format with double gold border styling, smart degree positioning (e.g., `Ir. Joko Widodo` or `Joko Widodo, S.Hut.`), and an on-chain verification stamp.
-* **Print & Export PDF:** Built-in PDF print stylesheet (`@media print`) allowing users to download or print clean, standalone official digital diploma certificates.
+* **Print & Export PDF:** Built-in PDF print stylesheet (`@media print`) allowing users to download or print clean, standalone official digital diploma certificates without website navigation elements.
 * **Direct Explorer Verification:** Direct link to inspect the deployed smart contract on BOT Chain Explorer (`https://scan.botchain.ai/address/0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053`).
 
 ### 🛡️ For Educational Institutions (Admin / Contract Owner)
@@ -64,6 +69,7 @@ function getAllDiplomaNumbers() public view returns (string[] memory)
 
 * **Frontend Framework:** Next.js 16 (App Router, TypeScript)
 * **Styling & Design System:** Tailwind CSS, Lucide Icons, Canvas Confetti
+* **Multi-Language:** Custom Bilingual i18n Engine (ID 🇮🇩 / EN 🇬🇧)
 * **Blockchain Interoperability:** ethers.js v6
 * **Smart Contract:** Solidity `^0.8.20`, Remix IDE
 * **Network:** BOT Chain Mainnet (EVM Compatible)
