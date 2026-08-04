@@ -35,7 +35,7 @@ export default function Home() {
     return new ethers.JsonRpcProvider(BOT_CHAIN_MAINNET.rpcUrl);
   };
 
-  // Check if connected address is owner dynamically from Smart Contract (contract.owner())
+  // Check if connected address is owner dynamically from Smart Contract
   const checkOwnerStatus = useCallback((addr: string, ownerAddr: string) => {
     if (!addr || !ownerAddr) {
       setIsOwner(false);
@@ -55,7 +55,7 @@ export default function Home() {
       const provider = getReadOnlyProvider();
       const contract = new ethers.Contract(contractAddress, ABI, provider);
       
-      // Fetch owner
+      // Fetch owner on-chain
       const owner = await contract.owner();
       setContractOwner(owner);
       checkOwnerStatus(userAddress, owner);
@@ -68,15 +68,16 @@ export default function Home() {
       for (let i = 0; i < Number(count); i++) {
         const dNum = await contract.diplomaNumbers(i);
         const d = await contract.getDiploma(dNum);
+        
         list.push({
-          diplomaNumber: d.diplomaNumber,
-          studentName: d.studentName,
-          major: d.major,
-          degree: d.degree,
-          graduationYear: Number(d.graduationYear),
-          issueDate: Number(d.issueDate),
-          issuer: d.issuer,
-          isValid: d.isValid,
+          diplomaNumber: d.diplomaNumber || d[0] || dNum,
+          studentName: d.studentName || d[1],
+          major: d.major || d[2],
+          degree: d.degree || d[3],
+          graduationYear: Number(d.graduationYear || d[4]),
+          issueDate: Number(d.issueDate || d[5]),
+          issuer: d.issuer || d[6],
+          isValid: Boolean(d.isValid ?? d[7]),
         });
       }
       setIssuedDiplomas(list);
@@ -109,15 +110,23 @@ export default function Home() {
         const contract = new ethers.Contract(contractAddress, ABI, provider);
         const res = await contract.verifyDiploma(diplomaNumber);
 
-        if (res && res.isValid) {
+        const isValid = Boolean(res.isValid ?? res[0]);
+        const studentName = res.studentName || res[1];
+        const major = res.major || res[2];
+        const degree = res.degree || res[3];
+        const graduationYear = Number(res.graduationYear || res[4]);
+        const issueDate = Number(res.issueDate || res[5]);
+        const issuer = res.issuer || res[6];
+
+        if (isValid) {
           const data: DiplomaData = {
             diplomaNumber: diplomaNumber,
-            studentName: res.studentName,
-            major: res.major,
-            degree: res.degree,
-            graduationYear: Number(res.graduationYear),
-            issueDate: Number(res.issueDate),
-            issuer: res.issuer,
+            studentName: studentName,
+            major: major,
+            degree: degree,
+            graduationYear: graduationYear,
+            issueDate: issueDate,
+            issuer: issuer,
             isValid: true,
           };
           setSearchResult(data);
