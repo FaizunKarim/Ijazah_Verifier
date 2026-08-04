@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { ShieldCheck, AlertCircle, Calendar, User, GraduationCap, Building2, ExternalLink, Hash, Clock, Award } from 'lucide-react';
 import { DiplomaData } from '@/lib/types';
-import { BOT_CHAIN_TESTNET } from '@/lib/constants';
+import { BOT_CHAIN_MAINNET } from '@/lib/constants';
 
 interface VerificationResultProps {
   result: DiplomaData | null;
@@ -80,7 +80,7 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
 
           <div className="bg-white/10 backdrop-blur-md px-4 py-2 rounded-xl border border-white/20 text-center sm:text-right">
             <span className="text-[10px] text-emerald-100 uppercase block font-semibold">JARINGAN BLOCKCHAIN</span>
-            <span className="font-mono text-sm font-bold text-white">{BOT_CHAIN_TESTNET.chainName}</span>
+            <span className="font-mono text-sm font-bold text-white">{BOT_CHAIN_MAINNET.chainName}</span>
           </div>
         </div>
 
@@ -166,12 +166,12 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
           {/* Action Link to Block Explorer */}
           <div className="pt-2 flex justify-center">
             <a
-              href={`${BOT_CHAIN_TESTNET.blockExplorerUrl}`}
+              href={`${BOT_CHAIN_MAINNET.blockExplorerUrl}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-6 py-3 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition-all shadow-md hover:shadow-lg"
             >
-              <span>Verifikasi di BOT Chain Explorer (scan.bohr.life)</span>
+              <span>Verifikasi di BOT Chain Explorer (scan.botchain.ai)</span>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
           </div>

@@ -9,7 +9,7 @@ import { VerificationResult } from '@/components/VerificationResult';
 import { ConnectWalletModal } from '@/components/ConnectWalletModal';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { DiplomaData } from '@/lib/types';
-import { BOT_CHAIN_TESTNET, DEFAULT_CONTRACT_ADDRESS, SAMPLE_FIRST_DIPLOMA } from '@/lib/constants';
+import { BOT_CHAIN_MAINNET, DEFAULT_CONTRACT_ADDRESS } from '@/lib/constants';
 import ABI from '@/contracts/IjazahVerifierABI.json';
 
 export default function Home() {
@@ -27,12 +27,12 @@ export default function Home() {
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
   // Admin Issued Diplomas List
-  const [issuedDiplomas, setIssuedDiplomas] = useState<DiplomaData[]>([SAMPLE_FIRST_DIPLOMA]);
+  const [issuedDiplomas, setIssuedDiplomas] = useState<DiplomaData[]>([]);
   const [isLoadingDiplomas, setIsLoadingDiplomas] = useState<boolean>(false);
 
-  // Initialize Read-Only Provider for BOT Chain
+  // Initialize Read-Only Provider for BOT Chain Mainnet
   const getReadOnlyProvider = () => {
-    return new ethers.JsonRpcProvider(BOT_CHAIN_TESTNET.rpcUrl);
+    return new ethers.JsonRpcProvider(BOT_CHAIN_MAINNET.rpcUrl);
   };
 
   // Check if connected address is owner
@@ -48,23 +48,48 @@ export default function Home() {
     }
   }, []);
 
-  // Fetch Contract Owner
-  const fetchContractOwner = useCallback(async () => {
+  // Fetch Contract Owner & All Issued Diplomas On-Chain
+  const fetchContractData = useCallback(async () => {
     try {
       if (!contractAddress) return;
       const provider = getReadOnlyProvider();
       const contract = new ethers.Contract(contractAddress, ABI, provider);
+      
+      // Fetch owner
       const owner = await contract.owner();
       setContractOwner(owner);
       checkOwnerStatus(userAddress, owner);
+
+      // Fetch issued diplomas on-chain
+      setIsLoadingDiplomas(true);
+      const count = await contract.getDiplomaCount();
+      const list: DiplomaData[] = [];
+
+      for (let i = 0; i < Number(count); i++) {
+        const dNum = await contract.diplomaNumbers(i);
+        const d = await contract.getDiploma(dNum);
+        list.push({
+          diplomaNumber: d.diplomaNumber,
+          studentName: d.studentName,
+          major: d.major,
+          degree: d.degree,
+          graduationYear: Number(d.graduationYear),
+          issueDate: Number(d.issueDate),
+          issuer: d.issuer,
+          isValid: d.isValid,
+        });
+      }
+      setIssuedDiplomas(list);
     } catch (err) {
-      console.warn('Could not fetch contract owner on-chain:', err);
+      console.warn('Could not fetch contract data on-chain:', err);
+    } finally {
+      setIsLoadingDiplomas(false);
     }
   }, [contractAddress, userAddress, checkOwnerStatus]);
 
   useEffect(() => {
-    fetchContractOwner();
-  }, [fetchContractOwner]);
+    fetchContractData();
+  }, [fetchContractData]);
 
   // Save manual wallet address
   const handleSaveManualAddress = (address: string) => {
@@ -72,42 +97,19 @@ export default function Home() {
     checkOwnerStatus(address, contractOwner);
   };
 
-  // Verify Diploma (Search On-Chain with Fallback)
+  // Pure On-Chain Verification
   const handleVerifyDiploma = async (diplomaNumber: string) => {
     setIsSearching(true);
     setSearchedNumber(diplomaNumber);
     setHasSearched(true);
 
-    // Fast check: sample diploma ID "IJZ-2026-001"
-    if (diplomaNumber.toUpperCase() === SAMPLE_FIRST_DIPLOMA.diplomaNumber) {
-      setTimeout(() => {
-        setSearchResult(SAMPLE_FIRST_DIPLOMA);
-        setIsSearching(false);
-      }, 400);
-      return;
-    }
-
-    // Search in local state issued list
-    const foundInLocal = issuedDiplomas.find(
-      (d) => d.diplomaNumber.toUpperCase() === diplomaNumber.toUpperCase()
-    );
-
-    if (foundInLocal) {
-      setTimeout(() => {
-        setSearchResult(foundInLocal);
-        setIsSearching(false);
-      }, 400);
-      return;
-    }
-
-    // Try reading directly from BOT Chain Smart Contract
     try {
       if (contractAddress) {
         const provider = getReadOnlyProvider();
         const contract = new ethers.Contract(contractAddress, ABI, provider);
         const res = await contract.verifyDiploma(diplomaNumber);
 
-        if (res.isValid) {
+        if (res && res.isValid) {
           const data: DiplomaData = {
             diplomaNumber: diplomaNumber,
             studentName: res.studentName,
@@ -124,15 +126,14 @@ export default function Home() {
         }
       }
     } catch (err) {
-      console.warn('On-chain read verification failed or diploma not found:', err);
+      console.warn('On-chain verification error or diploma not found:', err);
     }
 
-    // Not found
     setSearchResult(null);
     setIsSearching(false);
   };
 
-  // Issue New Diploma
+  // Issue New Diploma On-Chain via Wallet / MetaMask
   const handleIssueDiploma = async (
     dNum: string,
     sName: string,
@@ -151,8 +152,13 @@ export default function Home() {
         const contract = new ethers.Contract(contractAddress, ABI, signer);
         const tx = await contract.issueDiploma(dNum, sName, m, deg, gYear);
         await tx.wait();
+        
+        // Refresh list after transaction confirm
+        await fetchContractData();
+        return true;
       }
 
+      // Add to local view state if non-MetaMask
       const newDiploma: DiplomaData = {
         diplomaNumber: dNum,
         studentName: sName,
@@ -160,50 +166,15 @@ export default function Home() {
         degree: deg,
         graduationYear: gYear,
         issueDate: Math.floor(Date.now() / 1000),
-        issuer: userAddress || '0x1234567890123456789012345678901234567890',
+        issuer: userAddress || contractOwner || '0x383326ad73B522D82889d41BE9a71DA16f8EeC65',
         isValid: true,
       };
 
       setIssuedDiplomas((prev) => [newDiploma, ...prev]);
       return true;
     } catch (err) {
-      console.error('Error issuing diploma:', err);
+      console.error('Error issuing diploma on-chain:', err);
       return false;
-    }
-  };
-
-  // Refresh Issued List
-  const handleRefreshIssuedList = async () => {
-    setIsLoadingDiplomas(true);
-    try {
-      if (contractAddress) {
-        const provider = getReadOnlyProvider();
-        const contract = new ethers.Contract(contractAddress, ABI, provider);
-        const count = await contract.getDiplomaCount();
-        const list: DiplomaData[] = [];
-
-        for (let i = 0; i < Number(count); i++) {
-          const dNum = await contract.diplomaNumbers(i);
-          const d = await contract.getDiploma(dNum);
-          list.push({
-            diplomaNumber: d.diplomaNumber,
-            studentName: d.studentName,
-            major: d.major,
-            degree: d.degree,
-            graduationYear: Number(d.graduationYear),
-            issueDate: Number(d.issueDate),
-            issuer: d.issuer,
-            isValid: d.isValid,
-          });
-        }
-        if (list.length > 0) {
-          setIssuedDiplomas(list);
-        }
-      }
-    } catch (err) {
-      console.warn('Could not refresh list on-chain:', err);
-    } finally {
-      setIsLoadingDiplomas(false);
     }
   };
 
@@ -227,7 +198,7 @@ export default function Home() {
             onIssueDiploma={handleIssueDiploma}
             issuedDiplomas={issuedDiplomas}
             isLoading={isLoadingDiplomas}
-            onRefreshList={handleRefreshIssuedList}
+            onRefreshList={fetchContractData}
           />
         ) : (
           /* Connect Wallet = false -> Halaman Verifikasi Publik */
@@ -243,7 +214,7 @@ export default function Home() {
         )}
       </main>
 
-      {/* Connect Wallet Modal (Literal Wallet Address Form Only) */}
+      {/* Connect Wallet Modal */}
       <ConnectWalletModal
         isOpen={isConnectModalOpen}
         onClose={() => setIsConnectModalOpen(false)}
@@ -255,14 +226,14 @@ export default function Home() {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200/80 py-8 px-4 text-center text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <p>© 2026 Ijazah Verifier. Build Week Hackathon - BOT Chain (EVM).</p>
+          <p>© 2026 Ijazah Verifier. Build Week Hackathon - BOT Chain Mainnet.</p>
           <div className="flex items-center gap-4 text-slate-600 font-medium">
-            <a href="https://scan.bohr.life" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
+            <a href="https://scan.botchain.ai" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
               BOT Chain Explorer
             </a>
             <span>•</span>
-            <a href="https://faucet.botchain.ai/basic" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
-              Testnet Faucet
+            <a href="https://dex.botchain.ai" target="_blank" rel="noopener noreferrer" className="hover:text-blue-600">
+              BOT DEX
             </a>
           </div>
         </div>
