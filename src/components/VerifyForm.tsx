@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Search, BookOpen } from 'lucide-react';
+import { Search, BookOpen, Sparkles } from 'lucide-react';
 
 interface VerifyFormProps {
   onSearch: (diplomaNumber: string) => void;
@@ -15,6 +15,11 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
     e.preventDefault();
     if (!inputVal.trim()) return;
     onSearch(inputVal.trim());
+  };
+
+  const handleSelectSample = (sampleId: string) => {
+    setInputVal(sampleId);
+    onSearch(sampleId);
   };
 
   return (
@@ -41,7 +46,7 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
         </p>
 
         {/* Form Input Container */}
-        <form onSubmit={handleSubmit} className="relative">
+        <form onSubmit={handleSubmit} className="relative space-y-4">
           <div className="flex flex-col sm:flex-row gap-3">
 
             {/* Input Field */}
@@ -53,8 +58,8 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
                 type="text"
                 value={inputVal}
                 onChange={(e) => setInputVal(e.target.value)}
-                placeholder="Masukkan Nomor Ijazah..."
-                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-base sm:text-lg"
+                placeholder="Masukkan Nomor Ijazah (misal: IDN-2789-3245)..."
+                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-base sm:text-lg font-mono"
               />
             </div>
 
@@ -78,6 +83,26 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
             </button>
 
           </div>
+
+          {/* Dropdown / Quick Sample Mockup Option */}
+          <div className="pt-2 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              Contoh Nomor Ijazah Mockup:
+            </span>
+            <button
+              type="button"
+              onClick={() => handleSelectSample('IDN-2789-3245')}
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-mono font-bold transition-all shadow-xs group cursor-pointer"
+              title="Klik untuk memilih contoh nomor ijazah"
+            >
+              <span>IDN-2789-3245</span>
+              <span className="text-[10px] text-blue-500 font-sans font-normal group-hover:underline">
+                (Klik untuk verifikasi)
+              </span>
+            </button>
+          </div>
+
         </form>
 
       </div>

@@ -91,11 +91,11 @@ export const Hero3D: React.FC = () => {
                     Ir. Joko Widodo
                   </h3>
                   <p className="text-xs text-slate-600 font-medium">
-                    Program Studi Silvikultur / Kehutanan
+                    Program Studi Kehutanan (1986)
                   </p>
                   <div className="pt-2 flex items-center justify-center gap-2 text-xs font-semibold text-emerald-600">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>Status: VERIFIED (IJZ-2026-001)</span>
+                    <span>Status: VERIFIED (IDN-2789-3245)</span>
                   </div>
                 </div>
 
@@ -103,7 +103,7 @@ export const Hero3D: React.FC = () => {
                 <div className="pt-3 border-t border-slate-200/60 flex items-center justify-between text-xs text-slate-500 font-mono">
                   <div>
                     <p className="text-[10px] text-slate-400">SMART CONTRACT</p>
-                    <p className="font-semibold text-slate-800">BOT Chain #968</p>
+                    <p className="font-semibold text-slate-800">BOT Chain Mainnet (#677)</p>
                   </div>
                   <div className="px-3 py-1 bg-slate-900 text-amber-400 rounded-lg text-[10px] font-bold tracking-wider">
                     EVM VALIDATED

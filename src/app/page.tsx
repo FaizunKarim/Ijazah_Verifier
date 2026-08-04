@@ -232,6 +232,22 @@ export default function Home() {
       }
     } catch (e) {}
 
+    // Check Mockup IDN-2789-3245 fallback for quick demo
+    if (diplomaNumber.trim().toUpperCase() === 'IDN-2789-3245') {
+      setSearchResult({
+        diplomaNumber: 'IDN-2789-3245',
+        studentName: 'Joko Widodo',
+        major: 'Kehutanan',
+        degree: 'Ir.',
+        graduationYear: 1986,
+        issueDate: 1785814680, // 4 Agustus 2026 pukul 10.38
+        issuer: '0x383326ad73B522D82889d41BE9a71DA16f8EeC65',
+        isValid: true,
+      });
+      setIsSearching(false);
+      return;
+    }
+
     setSearchResult(null);
     setIsSearching(false);
   };
