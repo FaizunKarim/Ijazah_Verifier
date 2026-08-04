@@ -17,4 +17,7 @@ export const BOT_CHAIN_MAINNET = {
 };
 
 // Contract Address dipanggil murni dari env
-export const DEFAULT_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "";
+export const DEFAULT_CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS || "";
+
+// Admin Passkey dipanggil murni dari env
+export const ADMIN_PASSKEY = process.env.PASSKEY || "admin123";
