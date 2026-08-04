@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { ShieldCheck, AlertCircle, ExternalLink, Printer, CheckCircle2 } from 'lucide-react';
 import { DiplomaData } from '@/lib/types';
-import { BOT_CHAIN_MAINNET } from '@/lib/constants';
+import { BOT_CHAIN_MAINNET, DEFAULT_CONTRACT_ADDRESS } from '@/lib/constants';
 
 interface VerificationResultProps {
   result: DiplomaData | null;
@@ -83,6 +83,9 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
 
   const formattedFullName = formatFullNameWithDegree(result.studentName, result.degree);
 
+  // Link langsung ke alamat Smart Contract di Explorer
+  const explorerContractUrl = `${BOT_CHAIN_MAINNET.blockExplorerUrl}/address/${DEFAULT_CONTRACT_ADDRESS}`;
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 mb-16 animate-in fade-in slide-in-from-bottom-4 duration-400">
       
@@ -158,7 +161,7 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
                 </div>
                 <p className="text-[11px] text-slate-500 font-mono">
                   Smart Contract Address:<br />
-                  <span className="font-bold text-slate-800 break-all">{BOT_CHAIN_MAINNET.rpcUrl}</span>
+                  <span className="font-bold text-slate-800 break-all">{DEFAULT_CONTRACT_ADDRESS || '0x9513aCa0BaFAdD3fB9E8eDE9550352F2E3b9a053'}</span>
                 </p>
               </div>
 
@@ -189,7 +192,7 @@ export const VerificationResult: React.FC<VerificationResultProps> = ({
             </button>
 
             <a
-              href={`${BOT_CHAIN_MAINNET.blockExplorerUrl}`}
+              href={explorerContractUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-2xl transition-all shadow-md hover:shadow-lg"
