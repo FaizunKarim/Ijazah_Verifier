@@ -35,16 +35,16 @@ export default function Home() {
     return new ethers.JsonRpcProvider(BOT_CHAIN_MAINNET.rpcUrl);
   };
 
-  // Check if connected address is owner
+  // Check if connected address is owner dynamically from Smart Contract (contract.owner())
   const checkOwnerStatus = useCallback((addr: string, ownerAddr: string) => {
-    if (!addr) {
+    if (!addr || !ownerAddr) {
       setIsOwner(false);
       return;
     }
-    if (ownerAddr && addr.toLowerCase() === ownerAddr.toLowerCase()) {
+    if (addr.toLowerCase() === ownerAddr.toLowerCase()) {
       setIsOwner(true);
     } else {
-      setIsOwner(true);
+      setIsOwner(false);
     }
   }, []);
 
