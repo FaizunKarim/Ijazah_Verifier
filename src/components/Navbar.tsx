@@ -22,7 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#f6f6f6] border-b border-[#e5e5e5] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
         
-        {/* Pojok Kiri Atas: Logo jokowi.webp (Lebih Besar) + Nama Aplikasi */}
+        {/* Pojok Kiri Atas: Logo jokowi.webp (80px) + Teks Nama Aplikasi (Diperbesar Bersanding Sempurna) */}
         <div className="flex items-center gap-4">
           <div className="relative w-20 h-20 flex-shrink-0">
             <Image
@@ -33,11 +33,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               priority
             />
           </div>
-          <div>
-            <span className="font-extrabold text-2xl tracking-tight text-slate-900 block leading-tight">
+          <div className="flex flex-col justify-center">
+            <span className="font-black text-3xl sm:text-4xl tracking-tight text-slate-900 block leading-tight">
               Ijazah<span className="text-blue-600">Verifier</span>
             </span>
-            <p className="text-xs text-slate-500 font-medium">Verifikasi Ijazah On-Chain</p>
+            <p className="text-sm sm:text-base text-slate-600 font-semibold tracking-wide">
+              Verifikasi Ijazah On-Chain
+            </p>
           </div>
         </div>
 
