@@ -37,7 +37,7 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
         </div>
 
         <p className="text-sm text-slate-600 mb-6">
-          Masukkan **Nomor / ID Ijazah** yang tertera pada dokumen untuk melakukan verifikasi langsung ke Smart Contract BOT Chain Mainnet.
+          Masukkan Nomor / ID Ijazah yang tertera pada dokumen untuk melakukan verifikasi langsung ke Smart Contract BOT Chain Mainnet.
         </p>
 
         {/* Form Input Container */}
