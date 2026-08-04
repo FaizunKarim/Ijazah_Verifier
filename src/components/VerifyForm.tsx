@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, BookOpen, Sparkles } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Search, BookOpen, Sparkles, CheckCircle2, ChevronDown } from 'lucide-react';
 
 interface VerifyFormProps {
   onSearch: (diplomaNumber: string) => void;
@@ -10,17 +10,34 @@ interface VerifyFormProps {
 
 export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) => {
   const [inputVal, setInputVal] = useState<string>('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inputVal.trim()) return;
+    setIsDropdownOpen(false);
     onSearch(inputVal.trim());
   };
 
-  const handleSelectSample = (sampleId: string) => {
+  const handleSelectDropdownItem = (sampleId: string) => {
     setInputVal(sampleId);
+    setIsDropdownOpen(false);
     onSearch(sampleId);
   };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
     <section className="relative z-20 max-w-4xl mx-auto px-4 sm:px-6 -mt-6 mb-12">
@@ -45,22 +62,78 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
           Masukkan Nomor / ID Ijazah yang tertera pada dokumen untuk melakukan verifikasi langsung ke Smart Contract BOT Chain Mainnet.
         </p>
 
-        {/* Form Input Container */}
-        <form onSubmit={handleSubmit} className="relative space-y-4">
+        {/* Form Input Container with Dropdown */}
+        <form onSubmit={handleSubmit} className="relative">
           <div className="flex flex-col sm:flex-row gap-3">
 
-            {/* Input Field */}
-            <div className="relative flex-1">
+            {/* Input Field with Dropdown Anchor */}
+            <div className="relative flex-1" ref={containerRef}>
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
                 <BookOpen className="w-5 h-5" />
               </div>
+
               <input
                 type="text"
                 value={inputVal}
-                onChange={(e) => setInputVal(e.target.value)}
-                placeholder="Masukkan Nomor Ijazah (misal: IDN-2789-3245)..."
-                className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-base sm:text-lg font-mono"
+                onFocus={() => setIsDropdownOpen(true)}
+                onClick={() => setIsDropdownOpen(true)}
+                onChange={(e) => {
+                  setInputVal(e.target.value);
+                  setIsDropdownOpen(true);
+                }}
+                placeholder="Masukkan Nomor Ijazah..."
+                className="w-full pl-12 pr-10 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-base sm:text-lg font-mono"
               />
+
+              <div className="absolute inset-y-0 right-0 pr-3.5 flex items-center pointer-events-none text-slate-400">
+                <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180 text-blue-600' : ''}`} />
+              </div>
+
+              {/* DROPDOWN MENU (Muncul Otomatis Saat Field Input Diklik / Ditekan) */}
+              {isDropdownOpen && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-slate-200 shadow-2xl z-50 overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+                  <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                      Rekomendasi Nomor Ijazah (Mockup Demo)
+                    </span>
+                    <span className="text-[10px] text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-md">
+                      Pilih & Verifikasi
+                    </span>
+                  </div>
+
+                  <div className="p-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleSelectDropdownItem('IDN-2789-3245')}
+                      className="w-full text-left p-3 rounded-xl hover:bg-blue-50/80 transition-all flex items-center justify-between group cursor-pointer border border-transparent hover:border-blue-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                          <CheckCircle2 className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono font-bold text-sm text-blue-600 group-hover:text-blue-700">
+                              IDN-2789-3245
+                            </span>
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
+                              SAH ON-CHAIN
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600 font-medium">
+                            Ir. Joko Widodo • Kehutanan (1986)
+                          </p>
+                        </div>
+                      </div>
+
+                      <span className="text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
+                        Pilih ➔
+                      </span>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Submit Button */}
@@ -83,26 +156,6 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
             </button>
 
           </div>
-
-          {/* Dropdown / Quick Sample Mockup Option */}
-          <div className="pt-2 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Contoh Nomor Ijazah Mockup:
-            </span>
-            <button
-              type="button"
-              onClick={() => handleSelectSample('IDN-2789-3245')}
-              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-700 text-xs font-mono font-bold transition-all shadow-xs group cursor-pointer"
-              title="Klik untuk memilih contoh nomor ijazah"
-            >
-              <span>IDN-2789-3245</span>
-              <span className="text-[10px] text-blue-500 font-sans font-normal group-hover:underline">
-                (Klik untuk verifikasi)
-              </span>
-            </button>
-          </div>
-
         </form>
 
       </div>
