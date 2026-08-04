@@ -2,13 +2,16 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, BookOpen, Sparkles, CheckCircle2, ChevronDown } from 'lucide-react';
+import { Language, translations } from '@/lib/translations';
 
 interface VerifyFormProps {
   onSearch: (diplomaNumber: string) => void;
   isLoading: boolean;
+  lang: Language;
 }
 
-export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) => {
+export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading, lang }) => {
+  const t = translations[lang];
   const [inputVal, setInputVal] = useState<string>('');
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -50,16 +53,16 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
               <Search className="w-4 h-4" />
             </div>
             <h3 className="text-lg font-bold text-slate-900">
-              Form Cari & Verifikasi Ijazah On-Chain
+              {t.formTitle}
             </h3>
           </div>
           <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-            Publik Access
+            {t.formPublicBadge}
           </span>
         </div>
 
         <p className="text-sm text-slate-600 mb-6">
-          Masukkan Nomor / ID Ijazah yang tertera pada dokumen untuk melakukan verifikasi langsung ke Smart Contract BOT Chain Mainnet.
+          {t.formDesc}
         </p>
 
         {/* Form Input Container with Dropdown */}
@@ -81,7 +84,7 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
                   setInputVal(e.target.value);
                   setIsDropdownOpen(true);
                 }}
-                placeholder="Masukkan Nomor Ijazah..."
+                placeholder={t.inputPlaceholder}
                 className="w-full pl-12 pr-10 py-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all text-base sm:text-lg font-mono"
               />
 
@@ -95,10 +98,10 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
                   <div className="p-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
                     <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-                      Rekomendasi Nomor Ijazah (Mockup Demo)
+                      {t.dropdownHeader}
                     </span>
                     <span className="text-[10px] text-blue-600 font-semibold bg-blue-50 px-2 py-0.5 rounded-md">
-                      Pilih & Verifikasi
+                      {t.dropdownBadge}
                     </span>
                   </div>
 
@@ -118,17 +121,17 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
                               IDN-2789-3245
                             </span>
                             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-md">
-                              SAH ON-CHAIN
+                              {t.dropdownItemStatus}
                             </span>
                           </div>
                           <p className="text-xs text-slate-600 font-medium">
-                            Ir. Joko Widodo • Kehutanan (1986)
+                            {t.dropdownItemDesc}
                           </p>
                         </div>
                       </div>
 
                       <span className="text-xs font-bold text-blue-600 group-hover:translate-x-1 transition-transform">
-                        Pilih ➔
+                        {t.dropdownSelectBtn}
                       </span>
                     </button>
                   </div>
@@ -145,12 +148,12 @@ export const VerifyForm: React.FC<VerifyFormProps> = ({ onSearch, isLoading }) =
               {isLoading ? (
                 <>
                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  <span>Memeriksa On-Chain...</span>
+                  <span>{t.verifyingBtn}</span>
                 </>
               ) : (
                 <>
                   <Search className="w-5 h-5" />
-                  <span>Verifikasi Sekarang</span>
+                  <span>{t.verifyBtn}</span>
                 </>
               )}
             </button>

@@ -1,8 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, PlusCircle, ListFilter, CheckCircle2, AlertTriangle, RefreshCw, Send, Sparkles } from 'lucide-react';
+import { ShieldAlert, Award, FilePlus, List, CheckCircle2, RefreshCw } from 'lucide-react';
 import { DiplomaData } from '@/lib/types';
+import { BOT_CHAIN_MAINNET, DEFAULT_CONTRACT_ADDRESS } from '@/lib/constants';
+import { Language, translations } from '@/lib/translations';
 
 interface AdminDashboardProps {
   isOwner: boolean;
@@ -17,6 +19,7 @@ interface AdminDashboardProps {
   issuedDiplomas: DiplomaData[];
   isLoading: boolean;
   onRefreshList: () => void;
+  lang: Language;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -26,76 +29,66 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   issuedDiplomas,
   isLoading,
   onRefreshList,
+  lang,
 }) => {
-  // Helper to generate a unique 12-character numeric Diploma ID with duplicate check
-  const generateUniqueDiplomaID = () => {
-    const chars = '0123456789';
-    let candidate = '';
-    const existingSet = new Set(issuedDiplomas.map((d) => d.diplomaNumber.toUpperCase()));
+  const t = translations[lang];
 
-    do {
-      candidate = '';
-      for (let i = 0; i < 8; i++) {
-        candidate += chars.charAt(Math.floor(Math.random() * chars.length));
+  // Helper generator ID Ijazah Unik (IDN-XXXX-XXXX)
+  const generateUniqueDiplomaID = (): string => {
+    let newId = '';
+    let isDuplicate = true;
+
+    while (isDuplicate) {
+      const part1 = Math.floor(1000 + Math.random() * 9000).toString();
+      const part2 = Math.floor(1000 + Math.random() * 9000).toString();
+      newId = `IDN-${part1}-${part2}`;
+
+      if (newId === 'IDN-0000-0000') continue;
+
+      const exists = issuedDiplomas.some(
+        (d) => d.diplomaNumber.toUpperCase() === newId.toUpperCase()
+      );
+      if (!exists) {
+        isDuplicate = false;
       }
-      candidate = `IDN-${candidate.substring(0, 4)}-${candidate.substring(4, 8)}`;
-    } while (candidate === 'IDN-0000-0000' || existingSet.has(candidate)); // Anti-duplikat & tidak boleh IDN-0000-0000
+    }
 
-    return candidate;
+    return newId;
   };
 
-  const [diplomaNumber, setDiplomaNumber] = useState('');
-  const [studentName, setStudentName] = useState('');
-  const [major, setMajor] = useState('');
-  const [degree, setDegree] = useState('S.Kom');
-  const [graduationYear, setGraduationYear] = useState<number>(2026);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Form State
+  const [diplomaNumber, setDiplomaNumber] = useState<string>('');
+  const [studentName, setStudentName] = useState<string>('');
+  const [major, setMajor] = useState<string>('');
+  const [degree, setDegree] = useState<string>('S.Kom');
+  const [graduationYear, setGraduationYear] = useState<number>(new Date().getFullYear());
+
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Auto-generate initial ID when component mounts
+  // Inisialisasi ID Ijazah otomatis saat pertama kali dibuka atau setelah terbit
   useEffect(() => {
     setDiplomaNumber(generateUniqueDiplomaID());
-  }, []);
-
-  const handleGenerateNewID = () => {
-    setDiplomaNumber(generateUniqueDiplomaID());
-  };
-
-  if (!userAddress) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 my-12">
-        <div className="bg-amber-50 border-2 border-amber-200 rounded-3xl p-8 text-center space-y-4">
-          <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
-            <ShieldAlert className="w-8 h-8" />
-          </div>
-          <h3 className="text-2xl font-bold text-amber-900">Koneksi Wallet Diperlukan</h3>
-          <p className="text-amber-800 text-sm max-w-md mx-auto">
-            Silakan klik tombol **Connect Wallet** di pojok kanan atas untuk mengakses Admin Dashboard penerbitan ijazah.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isOwner) {
-    return null;
-  }
+    // eslint-disable-next-deps
+  }, [issuedDiplomas.length]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMsg(null);
 
-    if (!diplomaNumber || !studentName || !major || !degree) {
-      setMsg({ type: 'error', text: 'Mohon lengkapi seluruh field form di bawah.' });
+    if (!diplomaNumber || !studentName || !major || !degree || !graduationYear) {
+      setMsg({ type: 'error', text: lang === 'id' ? 'Mohon lengkapi seluruh field form penerbitan ijazah.' : 'Please fill in all diploma form fields.' });
       return;
     }
 
     const isDuplicate = issuedDiplomas.some(
       (d) => d.diplomaNumber.toUpperCase() === diplomaNumber.trim().toUpperCase()
     );
-
     if (isDuplicate) {
-      setMsg({ type: 'error', text: `Nomor Ijazah "${diplomaNumber}" sudah pernah diterbitkan di blockchain!` });
+      setMsg({
+        type: 'error',
+        text: `${lang === 'id' ? 'Nomor Ijazah' : 'Diploma Number'} "${diplomaNumber}" ${lang === 'id' ? 'sudah terdaftar di Smart Contract!' : 'is already registered in Smart Contract!'}`,
+      });
       return;
     }
 
@@ -112,229 +105,260 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       if (success) {
         setMsg({
           type: 'success',
-          text: `Ijazah "${diplomaNumber}" berhasil diterbitkan ke BOT Chain!`,
+          text: `${lang === 'id' ? 'Ijazah' : 'Diploma'} "${diplomaNumber}" ${lang === 'id' ? 'berhasil diterbitkan ke BOT Chain!' : 'successfully issued to BOT Chain!'}`,
         });
-        // Generate new unique ID for the next issue
         setDiplomaNumber(generateUniqueDiplomaID());
         setStudentName('');
         setMajor('');
       } else {
-        setMsg({ type: 'error', text: 'Gagal menerbitkan ijazah. Periksa transaksi MetaMask Anda.' });
+        setMsg({ type: 'error', text: lang === 'id' ? 'Gagal menerbitkan ijazah. Periksa transaksi MetaMask Anda.' : 'Failed to issue diploma. Check your MetaMask transaction.' });
       }
     } catch (err: unknown) {
       console.error('Error issuing diploma:', err);
       setMsg({
         type: 'error',
-        text: 'Transaksi Dibatalkan / Gagal: Saldo BOT tidak mencukupi untuk Gas Fee atau transaksi ditolak di MetaMask.',
+        text: lang === 'id'
+          ? 'Transaksi Dibatalkan / Gagal: Saldo BOT tidak mencukupi untuk Gas Fee atau transaksi ditolak di MetaMask.'
+          : 'Transaction Canceled / Failed: Insufficient BOT balance for Gas Fee or transaction rejected in MetaMask.',
       });
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const truncatedUserAddress = userAddress
+    ? `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`
+    : '';
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 my-12 space-y-10 animate-in fade-in duration-300">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8 animate-in fade-in duration-300">
       
-      {/* Header Admin */}
-      <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-        <div className="space-y-2 text-center md:text-left">
-          <span className="text-xs font-mono font-bold uppercase tracking-wider bg-blue-600 text-white px-3 py-1 rounded-full inline-block">
-            ADMIN DASHBOARD INSTITUSI
-          </span>
-          <h2 className="text-2xl sm:text-3xl font-black">Penerbitan Ijazah On-Chain</h2>
-          <p className="text-slate-400 text-xs sm:text-sm">
-            Status Wallet Admin: <span className="font-mono text-emerald-400 font-bold">{userAddress}</span>
-          </p>
+      {/* Top Banner Access Status */}
+      <div className="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl relative overflow-hidden">
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center text-white flex-shrink-0 shadow-lg shadow-blue-500/30">
+            <Award className="w-7 h-7" />
+          </div>
+          <div>
+            <span className="text-[10px] font-mono uppercase bg-blue-500/20 text-blue-300 px-2.5 py-1 rounded-full border border-blue-400/20 inline-block mb-1">
+              {t.adminBadge}
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+              {t.adminTitle}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400 font-mono mt-1">
+              {t.adminWalletStatus} <span className="text-emerald-400 font-bold">{truncatedUserAddress}</span> ({isOwner ? 'Owner' : 'Authorized Signer'})
+            </p>
+          </div>
         </div>
 
-        <div className="flex items-center gap-4 bg-slate-800/80 p-4 rounded-2xl border border-slate-700 text-center">
-          <div>
-            <span className="text-2xl font-black text-amber-400 block">{issuedDiplomas.length}</span>
-            <span className="text-[10px] text-slate-400 font-semibold uppercase">Total Ijazah Terbit</span>
+        <div className="flex items-center gap-4 relative z-10 w-full md:w-auto justify-between md:justify-end">
+          <div className="bg-slate-800/80 px-4 py-3 rounded-2xl border border-slate-700 text-center">
+            <span className="text-[10px] text-slate-400 uppercase block font-semibold">{t.totalIssued}</span>
+            <span className="text-2xl font-black text-amber-400 font-mono">{issuedDiplomas.length}</span>
           </div>
+
           <button
             onClick={onRefreshList}
-            className="p-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 transition-all"
+            disabled={isLoading}
+            className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-2xl transition-all border border-slate-700 cursor-pointer disabled:opacity-50"
             title="Refresh List"
           >
-            <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin text-blue-400' : ''}`} />
           </button>
         </div>
       </div>
 
-      {/* Form Issue Diploma & List Table Split */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      {/* Main Grid: Form Left (col-5) & Table Right (col-7) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         
-        {/* Form Issue Diploma (5 Cols) */}
+        {/* Form Penerbitan Ijazah (Issue Diploma Form) */}
         <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl space-y-6">
+          
           <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-              <PlusCircle className="w-5 h-5" />
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+              <FilePlus className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-slate-900">Form Terbitkan Ijazah</h3>
-              <p className="text-xs text-slate-500">Nomor Ijazah otomatis ter-generate secara unik (12 Karakter)</p>
+              <h3 className="text-xl font-bold text-slate-900">{t.formIssueTitle}</h3>
+              <p className="text-xs text-slate-500">{t.formIssueDesc}</p>
             </div>
           </div>
 
+          {/* Feedback Alert Message */}
           {msg && (
             <div
-              className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2.5 ${
+              className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-3 ${
                 msg.type === 'success'
-                  ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-                  : 'bg-red-50 text-red-900 border border-red-200'
+                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                  : 'bg-red-50 text-red-800 border border-red-200'
               }`}
             >
               {msg.type === 'success' ? (
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
               ) : (
-                <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0" />
+                <ShieldAlert className="w-4 h-4 text-red-600 flex-shrink-0" />
               )}
               <span>{msg.text}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="text-xs font-bold text-slate-700 uppercase">
-                  Nomor Ijazah Unik (12 Karakter)
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs font-semibold">
+            
+            {/* Field 1: Nomor Ijazah Unik (Ter-generate & Terkunci) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                  {t.diplomaNumLabel}
                 </label>
-                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-1">
-                  🔒 TERKUNCI OTOMATIS
+                <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold">
+                  {t.lockedBadge}
                 </span>
               </div>
-
               <input
                 type="text"
                 value={diplomaNumber}
                 readOnly
-                tabIndex={-1}
-                className="w-full px-4 py-3 rounded-xl bg-slate-100/90 border border-slate-300 text-blue-700 font-mono text-sm font-bold tracking-wide cursor-not-allowed select-none shadow-inner"
+                className="w-full px-4 py-3 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 font-mono font-bold text-sm cursor-not-allowed select-none"
               />
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-700 uppercase block mb-1">
-                Nama Lengkap Siswa / Mahasiswa
+            {/* Field 2: Nama Mahasiswa */}
+            <div className="space-y-1.5">
+              <label className="text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                {t.studentNameLabel}
               </label>
               <input
                 type="text"
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
-                placeholder="misal: Ahmad Faizun"
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
+                placeholder="misal: Ir. Joko Widodo / Joko Widodo"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm"
               />
             </div>
 
-            <div>
-              <label className="text-xs font-bold text-slate-700 uppercase block mb-1">
-                Program Studi / Jurusan
-              </label>
-              <input
-                type="text"
-                value={major}
-                onChange={(e) => setMajor(e.target.value)}
-                placeholder="misal: Teknik Informatika"
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
-              />
-            </div>
-
+            {/* Field 3 & 4: Prodi & Gelar */}
             <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-bold text-slate-700 uppercase block mb-1">
-                  Gelar Akademik
+              <div className="space-y-1.5">
+                <label className="text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                  {t.majorLabel}
                 </label>
                 <input
                   type="text"
-                  value={degree}
-                  onChange={(e) => setDegree(e.target.value)}
-                  placeholder="misal: S.Kom / S.T"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
+                  value={major}
+                  onChange={(e) => setMajor(e.target.value)}
+                  placeholder="misal: Kehutanan"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 uppercase block mb-1">
-                  Tahun Lulus
+              <div className="space-y-1.5">
+                <label className="text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                  {t.degreeLabel}
                 </label>
-                <input
-                  type="number"
-                  value={graduationYear}
-                  onChange={(e) => setGraduationYear(parseInt(e.target.value))}
-                  placeholder="2026"
-                  className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
-                />
+                <select
+                  value={degree}
+                  onChange={(e) => setDegree(e.target.value)}
+                  className="w-full px-3 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm"
+                >
+                  <option value="Ir.">Ir. (Insinyur)</option>
+                  <option value="Dr.">Dr. (Doktor)</option>
+                  <option value="Drs.">Drs. (Drs)</option>
+                  <option value="S.Hut.">S.Hut. (Sarjana Kehutanan)</option>
+                  <option value="S.Kom">S.Kom (Sarjana Komputer)</option>
+                  <option value="S.T">S.T (Sarjana Teknik)</option>
+                  <option value="S.E">S.E (Sarjana Ekonomi)</option>
+                  <option value="M.T.">M.T. (Magister Teknik)</option>
+                  <option value="M.Kom">M.Kom (Magister Komputer)</option>
+                </select>
               </div>
             </div>
 
+            {/* Field 5: Tahun Lulus */}
+            <div className="space-y-1.5">
+              <label className="text-slate-700 font-bold uppercase tracking-wider text-[11px]">
+                {t.gradYearLabel}
+              </label>
+              <input
+                type="number"
+                value={graduationYear}
+                onChange={(e) => setGraduationYear(Number(e.target.value))}
+                min="1950"
+                max="2100"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white text-sm"
+              />
+            </div>
+
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-2xl transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2 text-sm mt-4"
+              className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 flex items-center justify-center gap-2 text-sm pt-4"
             >
               {isSubmitting ? (
                 <>
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  <span>Memproses Transaksi On-Chain...</span>
+                  <span>{t.issueSubmittingBtn}</span>
                 </>
               ) : (
                 <>
-                  <Send className="w-4 h-4" />
-                  <span>Terbitkan Ijazah ke BOT Chain</span>
+                  <FilePlus className="w-4 h-4" />
+                  <span>{t.issueSubmitBtn}</span>
                 </>
               )}
             </button>
+
           </form>
 
         </div>
 
-        {/* List Table of Issued Diplomas (7 Cols) */}
+        {/* Tabel Daftar Ijazah Terbit (Issued Diploma List) */}
         <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/90 shadow-xl space-y-6">
+          
           <div className="flex items-center justify-between border-b border-slate-100 pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
-                <ListFilter className="w-5 h-5" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+                <List className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Daftar Ijazah Terbit</h3>
-                <p className="text-xs text-slate-500">Ijazah terverifikasi dalam smart contract</p>
+                <h3 className="text-xl font-bold text-slate-900">{t.issuedListTitle}</h3>
+                <p className="text-xs text-slate-500">{t.issuedListDesc}</p>
               </div>
             </div>
-            <span className="text-xs bg-slate-100 font-bold px-3 py-1 rounded-full text-slate-600">
-              {issuedDiplomas.length} Record
+            <span className="text-xs font-mono font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-full">
+              {issuedDiplomas.length} Record{issuedDiplomas.length !== 1 ? 's' : ''}
             </span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div className="overflow-x-auto rounded-2xl border border-slate-200/80">
+            <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="border-b border-slate-200 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                  <th className="py-3 px-3">Nomor Ijazah</th>
-                  <th className="py-3 px-3">Nama Mahasiswa</th>
-                  <th className="py-3 px-3">Prodi</th>
-                  <th className="py-3 px-3">Tahun</th>
-                  <th className="py-3 px-3 text-right">Status</th>
+                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-mono tracking-wider">
+                  <th className="p-3.5 font-bold">{t.colNum}</th>
+                  <th className="p-3.5 font-bold">{t.colName}</th>
+                  <th className="p-3.5 font-bold">{t.colMajor}</th>
+                  <th className="p-3.5 font-bold">{t.colYear}</th>
+                  <th className="p-3.5 font-bold">{t.colStatus}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 text-xs font-semibold text-slate-700">
+              <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {issuedDiplomas.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-8 text-center text-slate-400">
-                      Belum ada ijazah yang diterbitkan.
+                    <td colSpan={5} className="p-8 text-center text-slate-400 italic">
+                      {t.emptyList}
                     </td>
                   </tr>
                 ) : (
-                  issuedDiplomas.map((d, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="py-3.5 px-3 font-mono font-bold text-blue-600">{d.diplomaNumber}</td>
-                      <td className="py-3.5 px-3 text-slate-900">{d.studentName}</td>
-                      <td className="py-3.5 px-3">{d.major} ({d.degree})</td>
-                      <td className="py-3.5 px-3">{d.graduationYear}</td>
-                      <td className="py-3.5 px-3 text-right">
-                        <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold inline-flex items-center gap-1">
+                  issuedDiplomas.map((d, index) => (
+                    <tr key={index} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="p-3.5 font-mono font-bold text-blue-600">{d.diplomaNumber}</td>
+                      <td className="p-3.5 font-bold text-slate-900">{d.studentName}</td>
+                      <td className="p-3.5">{d.major}</td>
+                      <td className="p-3.5 font-mono">{d.graduationYear}</td>
+                      <td className="p-3.5">
+                        <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-md font-bold text-[10px]">
                           <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                          Valid
+                          {t.statusValid}
                         </span>
                       </td>
                     </tr>

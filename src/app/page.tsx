@@ -10,9 +10,17 @@ import { ConnectWalletModal } from '@/components/ConnectWalletModal';
 import { AdminDashboard } from '@/components/AdminDashboard';
 import { DiplomaData } from '@/lib/types';
 import { BOT_CHAIN_MAINNET, DEFAULT_CONTRACT_ADDRESS } from '@/lib/constants';
+import { Language } from '@/lib/translations';
 import ABI from '@/contracts/IjazahVerifierABI.json';
 
 export default function Home() {
+  // Language State: 'id' (Indonesia) | 'en' (English)
+  const [lang, setLang] = useState<Language>('id');
+
+  const toggleLanguage = () => {
+    setLang((prev) => (prev === 'id' ? 'en' : 'id'));
+  };
+
   // Wallet State
   const [userAddress, setUserAddress] = useState<string>('');
   const [contractAddress] = useState<string>(DEFAULT_CONTRACT_ADDRESS);
@@ -237,7 +245,7 @@ export default function Home() {
       setSearchResult({
         diplomaNumber: 'IDN-2789-3245',
         studentName: 'Joko Widodo',
-        major: 'Kehutanan',
+        major: lang === 'id' ? 'Kehutanan' : 'Forestry',
         degree: 'Ir.',
         graduationYear: 1986,
         issueDate: 1785814680, // 4 Agustus 2026 pukul 10.38
@@ -308,7 +316,6 @@ export default function Home() {
         return true;
       } catch (err: unknown) {
         console.error('MetaMask transaction failed or canceled:', err);
-        // Throw error back to AdminDashboard so it displays error alert and DOES NOT record failed diploma
         throw err;
       }
     }
@@ -330,11 +337,13 @@ export default function Home() {
   return (
     <div className="min-h-screen flex flex-col justify-between bg-slate-50 text-slate-900 selection:bg-blue-600 selection:text-white">
       
-      {/* Top Navbar */}
+      {/* Top Navbar with Language Switcher */}
       <Navbar
         userAddress={userAddress}
         isOwner={isOwner}
         onOpenConnectModal={() => setIsConnectModalOpen(true)}
+        lang={lang}
+        onToggleLang={toggleLanguage}
       />
 
       {/* Main Content Area: Automatic Switch based on Connect Wallet state */}
@@ -348,16 +357,18 @@ export default function Home() {
             issuedDiplomas={issuedDiplomas}
             isLoading={isLoadingDiplomas}
             onRefreshList={fetchContractData}
+            lang={lang}
           />
         ) : (
           /* Connect Wallet = false -> Halaman Verifikasi Publik */
           <>
-            <Hero3D />
-            <VerifyForm onSearch={handleVerifyDiploma} isLoading={isSearching} />
+            <Hero3D lang={lang} />
+            <VerifyForm onSearch={handleVerifyDiploma} isLoading={isSearching} lang={lang} />
             <VerificationResult
               result={searchResult}
               searchedNumber={searchedNumber}
               hasSearched={hasSearched}
+              lang={lang}
             />
           </>
         )}
@@ -371,6 +382,7 @@ export default function Home() {
         onSaveManualAddress={handleSaveManualAddress}
         isOwner={isOwner}
         contractOwner={contractOwner}
+        lang={lang}
       />
 
       {/* Footer */}

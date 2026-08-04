@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { X, Wallet, Lock, AlertTriangle } from 'lucide-react';
-import { ADMIN_PASSKEY } from '@/lib/constants';
+import { X, ShieldAlert, KeyRound, Wallet, LogIn } from 'lucide-react';
+import { Language, translations } from '@/lib/translations';
 
 interface ConnectWalletModalProps {
   isOpen: boolean;
@@ -10,7 +10,8 @@ interface ConnectWalletModalProps {
   userAddress: string;
   onSaveManualAddress: (address: string) => void;
   isOwner: boolean;
-  contractOwner?: string;
+  contractOwner: string;
+  lang: Language;
 }
 
 export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
@@ -19,106 +20,114 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
   userAddress,
   onSaveManualAddress,
   contractOwner,
+  lang,
 }) => {
-  const [manualAddrInput, setManualAddrInput] = useState<string>(userAddress || '');
-  const [passkeyInput, setPasskeyInput] = useState<string>('');
+  const t = translations[lang];
+  const [inputAddress, setInputAddress] = useState<string>(userAddress || '');
+  const [inputPasskey, setInputPasskey] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
 
   if (!isOpen) return null;
 
-  const handleSaveManual = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!manualAddrInput.trim()) {
-      setErrorMsg('Mohon masukkan Wallet Address.');
+    const cleanAddress = inputAddress.trim();
+    const cleanPasskey = inputPasskey.trim();
+    const adminPasskey = process.env.PASSKEY || 'Izunkarim1';
+
+    if (!cleanAddress) {
+      setErrorMsg(t.errNoAddress);
       return;
     }
 
-    // 1. Passkey authentication check
-    if (passkeyInput.trim() !== ADMIN_PASSKEY) {
-      setErrorMsg('Sandi Admin / Passkey salah! Akses ditolak.');
+    if (cleanPasskey !== adminPasskey) {
+      setErrorMsg(t.errWrongPasskey);
       return;
     }
 
-    // 2. Owner wallet authentication check
-    if (contractOwner && manualAddrInput.trim().toLowerCase() !== contractOwner.toLowerCase()) {
-      setErrorMsg('Wallet kamu bukan merupakan Owner Smart Contract! Akses ditolak.');
+    if (contractOwner && cleanAddress.toLowerCase() !== contractOwner.toLowerCase()) {
+      setErrorMsg(t.errWrongOwner);
       return;
     }
 
-    onSaveManualAddress(manualAddrInput.trim());
+    onSaveManualAddress(cleanAddress);
     onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative space-y-6">
+      <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-200 relative animate-in zoom-in-95 duration-200">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all"
+          className="absolute top-6 right-6 p-2 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Header Title */}
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-            <Wallet className="w-6 h-6" />
+        {/* Modal Header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold shadow-inner">
+            <KeyRound className="w-6 h-6" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-slate-900">Login Admin & Wallet</h3>
-            <p className="text-xs text-slate-500 font-medium">Masukkan Wallet Address & Sandi Admin</p>
+            <h3 className="text-xl font-bold text-slate-900">{t.modalTitle}</h3>
+            <p className="text-xs text-slate-500">{t.modalSubtitle}</p>
           </div>
         </div>
 
-        {/* Error Alert inside Modal */}
+        {/* Error Alert Box inside Modal */}
         {errorMsg && (
-          <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2 animate-in fade-in zoom-in-95 duration-150">
-            <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0" />
+          <div className="mb-6 p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-semibold flex items-center gap-3 animate-in shake duration-200">
+            <ShieldAlert className="w-5 h-5 text-red-600 flex-shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
-        {/* Manual Wallet Address & Passkey Form */}
-        <form onSubmit={handleSaveManual} className="space-y-4">
-          <div>
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+        <form onSubmit={handleLogin} className="space-y-5 text-xs font-semibold">
+          
+          {/* Field 1: Wallet Address */}
+          <div className="space-y-1.5">
+            <label className="text-slate-700 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
               <Wallet className="w-3.5 h-3.5 text-blue-600" />
-              WALLET ADDRESS (0x...)
+              <span>{t.walletInputLabel}</span>
             </label>
             <input
               type="text"
-              value={manualAddrInput}
-              onChange={(e) => setManualAddrInput(e.target.value)}
-              placeholder="Masukkan Wallet Address (0x...)"
-              className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
+              value={inputAddress}
+              onChange={(e) => setInputAddress(e.target.value)}
+              placeholder="0x..."
+              className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"
             />
           </div>
 
-          <div>
-            <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
-              <Lock className="w-3.5 h-3.5 text-amber-500" />
-              SANDI ADMIN / PASSKEY
+          {/* Field 2: Passkey */}
+          <div className="space-y-1.5">
+            <label className="text-slate-700 font-bold uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+              <KeyRound className="w-3.5 h-3.5 text-blue-600" />
+              <span>{t.passkeyInputLabel}</span>
             </label>
             <input
               type="password"
-              value={passkeyInput}
-              onChange={(e) => setPasskeyInput(e.target.value)}
-              placeholder="Masukkan Sandi Admin..."
-              className="w-full px-4 py-3 rounded-2xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
+              value={inputPasskey}
+              onChange={(e) => setInputPasskey(e.target.value)}
+              placeholder="••••••••"
+              className="w-full px-4 py-3.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white"
             />
           </div>
 
+          {/* Submit Button */}
           <button
             type="submit"
-            disabled={!manualAddrInput.trim() || !passkeyInput.trim()}
-            className="w-full py-3.5 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-bold rounded-2xl text-sm transition-all shadow-md shadow-blue-500/20 mt-2"
+            className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl transition-all shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 text-sm pt-4 cursor-pointer"
           >
-            Verifikasi Sandi & Masuk Admin
+            <LogIn className="w-4 h-4" />
+            <span>{t.modalSubmitBtn}</span>
           </button>
+
         </form>
 
       </div>

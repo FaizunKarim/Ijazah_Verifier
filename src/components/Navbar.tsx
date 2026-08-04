@@ -2,18 +2,24 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { Wallet, ChevronDown } from 'lucide-react';
+import { Wallet, ChevronDown, Globe } from 'lucide-react';
+import { Language, translations } from '@/lib/translations';
 
 interface NavbarProps {
   userAddress: string;
   isOwner: boolean;
   onOpenConnectModal: () => void;
+  lang: Language;
+  onToggleLang: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   userAddress,
   onOpenConnectModal,
+  lang,
+  onToggleLang,
 }) => {
+  const t = translations[lang];
   const truncatedAddress = userAddress
     ? `${userAddress.substring(0, 6)}...${userAddress.substring(userAddress.length - 4)}`
     : null;
@@ -38,13 +44,27 @@ export const Navbar: React.FC<NavbarProps> = ({
               Ijazah<span className="text-blue-600">Verifier</span>
             </span>
             <p className="text-sm sm:text-base text-slate-600 font-semibold tracking-wide">
-              Verifikasi Ijazah On-Chain
+              {t.navSubtitle}
             </p>
           </div>
         </div>
 
-        {/* Pojok Kanan Atas: Connect Wallet Button & Address Display */}
+        {/* Pojok Kanan Atas: Language Switcher & Connect Wallet Button */}
         <div className="flex items-center gap-3">
+          
+          {/* Language Switcher Toggle */}
+          <button
+            onClick={onToggleLang}
+            className="flex items-center gap-1.5 px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 hover:bg-slate-100 transition-all shadow-xs cursor-pointer"
+            title="Switch Language / Ganti Bahasa"
+          >
+            <Globe className="w-4 h-4 text-blue-600" />
+            <span className={lang === 'id' ? 'text-blue-600 font-extrabold' : 'text-slate-400'}>ID</span>
+            <span className="text-slate-300">|</span>
+            <span className={lang === 'en' ? 'text-blue-600 font-extrabold' : 'text-slate-400'}>EN</span>
+          </button>
+
+          {/* Connect Wallet Button */}
           <button
             onClick={onOpenConnectModal}
             className={`flex items-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm transition-all duration-200 shadow-sm ${
@@ -57,10 +77,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             {userAddress ? (
               <span className="font-mono">{truncatedAddress}</span>
             ) : (
-              <span>Connect Wallet</span>
+              <span>{t.connectWallet}</span>
             )}
             <ChevronDown className="w-3.5 h-3.5 opacity-70" />
           </button>
+
         </div>
 
       </div>

@@ -3,8 +3,15 @@
 import React from 'react';
 import Image from 'next/image';
 import { ShieldCheck, Award, Sparkles, Database, CheckCircle2 } from 'lucide-react';
+import { Language, translations } from '@/lib/translations';
 
-export const Hero3D: React.FC = () => {
+interface Hero3DProps {
+  lang: Language;
+}
+
+export const Hero3D: React.FC<Hero3DProps> = ({ lang }) => {
+  const t = translations[lang];
+
   return (
     <section className="relative overflow-hidden pt-12 pb-16 md:pt-20 md:pb-24 bg-gradient-to-b from-blue-50/50 via-slate-50 to-slate-50">
       {/* Background Decorative Orbs */}
@@ -19,35 +26,35 @@ export const Hero3D: React.FC = () => {
             {/* Tag Badge */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-sm text-xs font-semibold text-blue-700">
               <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              <span>Teknologi Smart Contract BOT Chain (EVM)</span>
+              <span>{t.heroBadge}</span>
             </div>
 
             {/* Main Headline */}
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
-              Verifikasi{' '}
+              {t.heroHeadline1}{' '}
               <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-800 bg-clip-text text-transparent">
-                Keaslian Ijazah
+                {t.heroHeadline2}
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-xl sm:text-2xl text-slate-600 font-medium max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-              Verifikasi Ijazah melalui On Chain. Mencegah pemalsuan dokumen akademik secara mutlak.
+              {t.heroSubtitle}
             </p>
 
             {/* Key Benefits Pills */}
             <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-4 text-xs sm:text-sm font-medium text-slate-700">
               <div className="flex items-center gap-1.5 bg-white px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-xs">
                 <ShieldCheck className="w-4 h-4 text-blue-600" />
-                <span>Tanpa Login / Wallet (Publik)</span>
+                <span>{t.heroBenefit1}</span>
               </div>
               <div className="flex items-center gap-1.5 bg-white px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-xs">
                 <Database className="w-4 h-4 text-emerald-600" />
-                <span>Terdaftar di BOT Chain</span>
+                <span>{t.heroBenefit2}</span>
               </div>
               <div className="flex items-center gap-1.5 bg-white px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-xs">
                 <Award className="w-4 h-4 text-amber-500" />
-                <span>Tanda Tangan Kriptografi</span>
+                <span>{t.heroBenefit3}</span>
               </div>
             </div>
 
@@ -77,25 +84,25 @@ export const Hero3D: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900 text-sm">Universitas Gadjah Mada</h4>
-                    <p className="text-xs text-slate-500 font-mono">Fakultas Kehutanan</p>
+                    <h4 className="font-bold text-slate-900 text-sm">{t.heroCardTitle}</h4>
+                    <p className="text-xs text-slate-500 font-mono">{t.heroCardFaculty}</p>
                   </div>
                 </div>
 
                 {/* Body Card: Sample Diploma Visual */}
                 <div className="my-4 p-4 rounded-2xl bg-gradient-to-br from-blue-50/80 to-slate-50 border border-blue-100/80 text-center space-y-2">
                   <span className="text-[10px] font-mono font-semibold tracking-wider text-blue-600 uppercase bg-blue-100/60 px-2.5 py-1 rounded-md">
-                    IJAZAH SARJANA ON-CHAIN
+                    {t.heroCardBadge}
                   </span>
                   <h3 className="text-xl font-black text-slate-900 tracking-tight">
                     Ir. Joko Widodo
                   </h3>
                   <p className="text-xs text-slate-600 font-medium">
-                    Program Studi Kehutanan (1986)
+                    {t.heroCardMajor}
                   </p>
                   <div className="pt-2 flex items-center justify-center gap-2 text-xs font-semibold text-emerald-600">
                     <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                    <span>Status: VERIFIED (IDN-2789-3245)</span>
+                    <span>{t.heroCardStatus}</span>
                   </div>
                 </div>
 
