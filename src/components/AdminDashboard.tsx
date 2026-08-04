@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ShieldAlert, PlusCircle, ListFilter, Award, CheckCircle2, AlertTriangle, RefreshCw, Send } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { ShieldAlert, PlusCircle, ListFilter, CheckCircle2, AlertTriangle, RefreshCw, Send, Sparkles } from 'lucide-react';
 import { DiplomaData } from '@/lib/types';
 
 interface AdminDashboardProps {
@@ -27,6 +27,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   isLoading,
   onRefreshList,
 }) => {
+  // Helper to generate a unique 12-character numeric Diploma ID with duplicate check
+  const generateUniqueDiplomaID = () => {
+    const chars = '0123456789';
+    let candidate = '';
+    const existingSet = new Set(issuedDiplomas.map((d) => d.diplomaNumber.toUpperCase()));
+
+    do {
+      candidate = '';
+      for (let i = 0; i < 8; i++) {
+        candidate += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      candidate = `IDN-${candidate.substring(0, 4)}-${candidate.substring(4, 8)}`;
+    } while (candidate === 'IDN-0000-0000' || existingSet.has(candidate)); // Anti-duplikat & tidak boleh IDN-0000-0000
+
+    return candidate;
+  };
+
   const [diplomaNumber, setDiplomaNumber] = useState('');
   const [studentName, setStudentName] = useState('');
   const [major, setMajor] = useState('');
@@ -34,6 +51,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [graduationYear, setGraduationYear] = useState<number>(2026);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Auto-generate initial ID when component mounts
+  useEffect(() => {
+    setDiplomaNumber(generateUniqueDiplomaID());
+  }, []);
+
+  const handleGenerateNewID = () => {
+    setDiplomaNumber(generateUniqueDiplomaID());
+  };
 
   if (!userAddress) {
     return (
@@ -76,6 +102,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       return;
     }
 
+    const isDuplicate = issuedDiplomas.some(
+      (d) => d.diplomaNumber.toUpperCase() === diplomaNumber.trim().toUpperCase()
+    );
+
+    if (isDuplicate) {
+      setMsg({ type: 'error', text: `Nomor Ijazah "${diplomaNumber}" sudah pernah diterbitkan di blockchain!` });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const success = await onIssueDiploma(
@@ -91,7 +126,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           type: 'success',
           text: `Ijazah "${diplomaNumber}" berhasil diterbitkan ke BOT Chain!`,
         });
-        setDiplomaNumber('');
+        // Generate new unique ID for the next issue
+        setDiplomaNumber(generateUniqueDiplomaID());
         setStudentName('');
         setMajor('');
       } else {
@@ -146,7 +182,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-bold text-slate-900">Form Terbitkan Ijazah</h3>
-              <p className="text-xs text-slate-500">Menerbitkan data baru ke Smart Contract</p>
+              <p className="text-xs text-slate-500">Nomor Ijazah otomatis ter-generate secara unik (12 Karakter)</p>
             </div>
           </div>
 
@@ -169,15 +205,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="text-xs font-bold text-slate-700 uppercase block mb-1">
-                Nomor Ijazah (Unik)
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-xs font-bold text-slate-700 uppercase">
+                  Nomor Ijazah Unik (12 Karakter)
+                </label>
+                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 flex items-center gap-1">
+                  🔒 TERKUNCI OTOMATIS
+                </span>
+              </div>
+
               <input
                 type="text"
                 value={diplomaNumber}
-                onChange={(e) => setDiplomaNumber(e.target.value)}
-                placeholder="misal: IJZ-2026-002"
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
+                readOnly
+                tabIndex={-1}
+                className="w-full px-4 py-3 rounded-xl bg-slate-100/90 border border-slate-300 text-blue-700 font-mono text-sm font-bold tracking-wide cursor-not-allowed select-none shadow-inner"
               />
             </div>
 
@@ -189,7 +231,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 type="text"
                 value={studentName}
                 onChange={(e) => setStudentName(e.target.value)}
-                placeholder="misal: Prabowo Subianto"
+                placeholder="misal: Ahmad Faizun"
                 className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
               />
             </div>
@@ -202,7 +244,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 type="text"
                 value={major}
                 onChange={(e) => setMajor(e.target.value)}
-                placeholder="misal: Manajemen / Ilmu Militer"
+                placeholder="misal: Teknik Informatika"
                 className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 text-sm font-semibold focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all"
               />
             </div>
