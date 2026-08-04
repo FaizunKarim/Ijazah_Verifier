@@ -78,19 +78,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   }
 
   if (!isOwner) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 my-12">
-        <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-8 text-center space-y-4">
-          <div className="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto">
-            <AlertTriangle className="w-8 h-8" />
-          </div>
-          <h3 className="text-2xl font-bold text-red-900">Akses Ditolak: Khusus Admin / Owner</h3>
-          <p className="text-red-700 text-sm max-w-lg mx-auto">
-            Wallet kamu (<span className="font-mono font-bold text-red-900">{userAddress.substring(0, 8)}...</span>) bukan merupakan **Owner Smart Contract**. Hanya pemilik contract yang dapat menerbitkan ijazah baru ke BOT Chain.
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

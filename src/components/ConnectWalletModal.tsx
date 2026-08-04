@@ -10,6 +10,7 @@ interface ConnectWalletModalProps {
   userAddress: string;
   onSaveManualAddress: (address: string) => void;
   isOwner: boolean;
+  contractOwner?: string;
 }
 
 export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
@@ -17,6 +18,7 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
   onClose,
   userAddress,
   onSaveManualAddress,
+  contractOwner,
 }) => {
   const [manualAddrInput, setManualAddrInput] = useState<string>(userAddress || '');
   const [passkeyInput, setPasskeyInput] = useState<string>('');
@@ -33,9 +35,15 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
       return;
     }
 
-    // Passkey authentication check
+    // 1. Passkey authentication check
     if (passkeyInput.trim() !== ADMIN_PASSKEY) {
       setErrorMsg('Sandi Admin / Passkey salah! Akses ditolak.');
+      return;
+    }
+
+    // 2. Owner wallet authentication check
+    if (contractOwner && manualAddrInput.trim().toLowerCase() !== contractOwner.toLowerCase()) {
+      setErrorMsg('Wallet kamu bukan merupakan Owner Smart Contract! Akses ditolak.');
       return;
     }
 
@@ -66,9 +74,9 @@ export const ConnectWalletModal: React.FC<ConnectWalletModalProps> = ({
           </div>
         </div>
 
-        {/* Error Alert */}
+        {/* Error Alert inside Modal */}
         {errorMsg && (
-          <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
+          <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2 animate-in fade-in zoom-in-95 duration-150">
             <AlertTriangle className="w-4 h-4 text-red-600 flex-shrink-0" />
             <span>{errorMsg}</span>
           </div>

@@ -221,6 +221,7 @@ export default function Home() {
         userAddress={userAddress}
         onSaveManualAddress={handleSaveManualAddress}
         isOwner={isOwner}
+        contractOwner={contractOwner}
       />
 
       {/* Footer */}
