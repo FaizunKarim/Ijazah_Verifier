@@ -10,9 +10,9 @@ export const metadata: Metadata = {
     'Platform verifikasi keaslian ijazah berbasis blockchain BOT Chain (EVM). Cepat, transparan, permanen, dan dapat diverifikasi oleh publik tanpa wallet.',
   keywords: ['ijazah verifier', 'bot chain', 'blockchain education', 'verifikasi ijazah', 'smart contract'],
   icons: {
-    icon: '/jokowi.webp',
-    shortcut: '/jokowi.webp',
-    apple: '/jokowi.webp',
+    icon: '/icon.webp',
+    shortcut: '/icon.webp',
+    apple: '/icon.webp',
   },
   openGraph: {
     title: 'Ijazah Verifier - Verifikasi Keaslian Ijazah On-Chain',
@@ -22,20 +22,20 @@ export const metadata: Metadata = {
     siteName: 'Ijazah Verifier',
     images: [
       {
-        url: '/jokowi.webp',
+        url: '/icon.webp',
         width: 800,
         height: 800,
-        alt: 'Ijazah Verifier Logo',
+        alt: 'Ijazah Verifier Icon',
       },
     ],
     type: 'website',
-  },
+    },
   twitter: {
     card: 'summary_large_image',
     title: 'Ijazah Verifier - Verifikasi Keaslian Ijazah On-Chain',
     description:
       'Verifikasi data ijazah secara transparan & instan yang diterbitkan langsung di BOT Chain Smart Contract.',
-    images: ['/jokowi.webp'],
+    images: ['/icon.webp'],
   },
 };
 

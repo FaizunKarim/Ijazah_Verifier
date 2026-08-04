@@ -22,7 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <header className="sticky top-0 z-40 bg-[#f6f6f6] border-b border-[#e5e5e5] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-24 flex items-center justify-between">
         
-        {/* Pojok Kiri Atas: Logo jokowi.webp (80px) + Teks Nama Aplikasi (Diperbesar Bersanding Sempurna) */}
+        {/* Pojok Kiri Atas: Logo jokowi.webp + Teks Nama Aplikasi (Besar & Seimbang) */}
         <div className="flex items-center gap-4">
           <div className="relative w-20 h-20 flex-shrink-0">
             <Image
